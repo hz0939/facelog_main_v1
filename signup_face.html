@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입 - 얼굴 등록</title>
+  <style>
+    video {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+    <!-- face-api.js를 CDN으로 로드 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+</head>
+<body>
+  <header>
+    <h1>회원가입 - 얼굴 등록</h1>
+  </header>
+  <main>
+    <video id="video" autoplay></video> <!-- 웹캠 스트리밍 화면 -->
+    <button id="captureButton">캡처</button> <!-- 캡처 버튼 -->
+  </main>
+  <script type="module" src="./renderer-signup-face.js"></script>
+</body>
+</html>

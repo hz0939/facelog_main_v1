@@ -1,0 +1,21 @@
+{
+    "name": "facelog",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "electron ."
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+      "electron": "^32.1.2"
+    },
+    "dependencies": {
+      "face-api.js": "^0.22.2",
+      "firebase": "^11.0.1"
+    }
+  }
+  
