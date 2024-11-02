@@ -9,6 +9,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // 사용자 인증 정보 가져오기
   getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
+  onAuthStateChanged: (callback) => ipcRenderer.on('auth-state-changed', (event, data) => callback(data)),
+  login: (credentials) => ipcRenderer.send('login', credentials),
+  logOut: () => ipcRenderer.send('logout'),
 
   // Firestore에서 사용자 문서 가져오기
   getUserDoc: (email) => ipcRenderer.invoke('get-user-doc', email),
@@ -23,7 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSignUpFailed: (callback) => ipcRenderer.on('sign-up-failed', (event, message) => callback(message)),
 
   sendLoginRequest: (data) => ipcRenderer.send('login', data),
-  onLoginSuccess: (callback) => ipcRenderer.on('login-success', callback),
+  onLoginSuccess: (callback) => ipcRenderer.on('login-success', (event, user) => callback(user)),
+  sendLoginRequest: (data) => ipcRenderer.send('login', data),
+
   onLoginFailed: (callback) => ipcRenderer.on('login-failed', (event, message) => callback(message)),
 
   navigateToFaceRegister: () => ipcRenderer.send('navigate-to-face-register'),
@@ -47,6 +52,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('auto-login', { url, id, password });
   },
 
+  getUserSites: (userEmail) => {
+    console.log("getUserSites 호출됨:", userEmail);
+    return ipcRenderer.invoke('get-user-sites', userEmail);
+  },
+  
 
   // 로그아웃 기능
   logOut: () => ipcRenderer.send('logout'),

@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { initializeApp } = require('firebase/app');
 const { getFirestore, collection,getDoc,addDoc, setDoc, doc, getDocs} = require('firebase/firestore');
-const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, browserSessionPersistence } = require('firebase/auth'); 
+const { getAuth, onAuthStateChanged, setPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,browserSessionPersistence,signOut, } = require('firebase/auth'); 
 const fs = require('fs');
 const { execFile } = require('child_process');
 
@@ -24,8 +24,20 @@ const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
-let win;
+
 let loggedInUserEmail = null; // 로그인된 사용자의 이메일
+setPersistence(auth, browserSessionPersistence)
+  .then(() => console.log("세션 지속성을 SESSION으로 설정했습니다."))
+  .catch(error => console.error("세션 지속성 설정 중 오류:", error.message));
+
+onAuthStateChanged(auth, (user) => {
+  loggedInUserEmail = user ? user.email : null;
+  BrowserWindow.getAllWindows().forEach(window => {
+    window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
+  });
+});
+
+  
 
 function createWindow() {
   win = new BrowserWindow({
@@ -112,16 +124,10 @@ ipcMain.on('sign-up', async (event, { email, password }) => {
   }
 });
 
-// 사용자 인증 정보 반환
 ipcMain.handle('get-auth-user', async () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  if (user) {
-    return { email: user.email };
-  } else {
-    return null;  // 로그인된 사용자가 없을 경우 null 반환
-  }
+  return loggedInUserEmail ? { email: loggedInUserEmail } : null;
 });
+
 
 ipcMain.handle('save-user-embedding', async (event, { email, faceEmbedding }) => {
   try {
@@ -143,7 +149,7 @@ ipcMain.handle('get-user-doc', async (event, email) => {
     const userDocSnap = await getDoc(userDocRef);  // getDoc으로 단일 문서 가져오기
 
     if (userDocSnap.exists()) {
-      console.log('사용자 데이터가 발견되었습니다:', email);
+      console.log('user email found:', email);
       return userDocSnap.data();
     } else {
       console.error('해당 이메일에 대한 사용자 데이터가 없습니다:', email);
@@ -157,20 +163,28 @@ ipcMain.handle('get-user-doc', async (event, email) => {
 
 
 
-// 로그인 처리
 ipcMain.on('login', async (event, { email, password }) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log(`로그인 성공: ${userCredential.user.email}`);
-    loggedInUserEmail = userCredential.user.email;
-    event.sender.send('login-success', loggedInUserEmail);
+    const loggedInEmail = userCredential.user.email;
+
+    console.log("로그인 성공:", loggedInEmail);
+    event.sender.send('login-success', { email: loggedInEmail });
+
+    // 로그인 성공 시 이메일을 localStorage에 저장
+    BrowserWindow.getAllWindows().forEach(window => {
+      window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${loggedInEmail}')`);
+    });
   } catch (error) {
-    console.error(`로그인 실패: ${error.message}`);
+    console.error("로그인 실패:", error.message);
     event.sender.send('login-failed', error.message);
   }
 });
 
-// 로그아웃 처리
+
+
+
+// 로그아웃 시 이메일 초기화
 ipcMain.on('logout', async (event) => {
   try {
     await signOut(auth);
@@ -184,14 +198,11 @@ ipcMain.on('logout', async (event) => {
 });
 
 
+
 // Firestore에서 데이터 가져오기
 ipcMain.handle('get-data', async (event, { collectionName }) => {
   try {
-    console.log('Fetching data from Firestore collection:', collectionName);  // 로그로 컬렉션 이름 확인
-
-    if (!collectionName || collectionName.trim() === '') {
-      throw new Error('Collection name is empty or invalid');
-    }
+    console.log('Fetching data from Firestore collection:', collectionName);
 
     const snapshot = await getDocs(collection(db, collectionName));
     return snapshot.docs.map(doc => doc.data());
@@ -200,6 +211,44 @@ ipcMain.handle('get-data', async (event, { collectionName }) => {
     throw error;
   }
 });
+
+//사이트 정보 저장
+ipcMain.handle('write-data', async (event, { collectionName, data }) => {
+  try {
+    console.log(`Firestore의 컬렉션 경로에 데이터 저장: ${collectionName}`, data);
+
+    // collectionName이 사용자의 브 컬렉션 경로로 전달됨 (예: `users/userEmail/sites`)
+    const docRef = await addDoc(collection(db, collectionName), data);
+    console.log('문서가 성공적으로 저장되었습니다. ID:', docRef.id);
+
+    return true;
+  } catch (error) {
+    console.error('Firestore 문서 저장 중 오류:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('get-user-sites', async (event, userEmail) => {
+  try {
+    const sitesCollectionRef = collection(db, `users/${userEmail}/sites`);
+    const querySnapshot = await getDocs(sitesCollectionRef);
+
+    // Firestore에서 가져온 데이터를 배열로 변환
+    const sites = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    console.log("불러온 사이트 데이터:", sites); // 디버깅용 로그
+    return sites;
+  } catch (error) {
+    console.error("사이트 데이터를 불러오는 중 오류 발생:", error);
+    return [];
+  }
+});
+
+
+
 
 
 ipcMain.handle('auto-login', async (event, { url, id, password }) => {
@@ -257,32 +306,16 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
 });
 
 
-ipcMain.handle('write-data', async (event, { collectionName, data }) => {
-  try {
-    console.log('Firestore write operation:', collectionName, data);  // 전달된 값 로그 확인
-
-    // collectionName이 유효한지 확인
-    if (!collectionName || collectionName.trim() === '') {
-      throw new Error("Collection name is empty");
-    }
-
-    // Firestore에 랜덤 docId로 문서 추가
-    const docRef = await addDoc(collection(db, collectionName), data);
-    console.log('Document successfully written with ID: ', docRef.id);
-    
-    return true;
-  } catch (error) {
-    console.error('Error writing document to Firestore:', error);
-    throw error;
-  }
-});
 
 
-// 페이지 이동 처리 (렌더러 프로세스에서 요청)
+
+// main.js
 ipcMain.on('navigate-to-write-page', (event) => {
-  const win = require('electron').BrowserWindow.getAllWindows()[0];
-  win.loadFile('writepage.html');  // 쓰기 페이지로 이동
+  console.log("Navigating to write page"); // 확인 로그 추가
+  const win = BrowserWindow.getAllWindows()[0];
+  win.loadFile('writepage.html');
 });
+
 
 ipcMain.on('navigate-to-signup', () => {
   win.loadFile('signup_credentials.html');
@@ -327,6 +360,16 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+
+auth.setPersistence(browserSessionPersistence)
+  .then(() => {
+    console.log("세션 지속성을 설정했습니다.");
+  })
+  .catch((error) => {
+    console.error("세션 지속성 설정 중 오류:", error.message);
+  });
+
 
 // Firebase 인증 세션을 브라우저 탭이 닫힐 때 종료되도록 설정
 auth.setPersistence(browserSessionPersistence)
