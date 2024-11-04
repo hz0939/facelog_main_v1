@@ -336,5 +336,3 @@ auth.setPersistence(browserSessionPersistence)
 .catch((error) => {
   console.error("세션 지속성 설정 중 오류:", error.message);
 });
-
-
