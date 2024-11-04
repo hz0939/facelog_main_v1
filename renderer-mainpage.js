@@ -1,55 +1,35 @@
-window.onload = () => {
+window.onload = async () => {
+  const dataDisplay = document.getElementById('data-display');
   const logOutButton = document.getElementById('logOutButton');
+  const addButton = document.getElementById('addButton');
   const logo = document.getElementById('logo');
+
+  const userEmail = localStorage.getItem('userEmail');
+  console.log("로그인된 사용자 이메일:", userEmail);
+
+  await new Promise(resolve => setTimeout(resolve, 1000)); // 지연 시간 추가
 
   if (logOutButton) {
     logOutButton.addEventListener('click', () => {
-      localStorage.removeItem('loggedInUser');
+      window.electronAPI.logOut();
+      localStorage.removeItem('userEmail');  // 로그아웃 시 이메일 제거
       window.electronAPI.navigateToIndex();
     });
   }
 
-  if (logo) {
-    logo.addEventListener('click', () => {
-      window.electronAPI.navigateToIndex();
-    });
-  }
-};
-
-window.onload = () => {
-  const logOutButton = document.getElementById('logOutButton');
-  const logo = document.getElementById('logo');
-
-  if (logOutButton) {
-    logOutButton.addEventListener('click', () => {
-      localStorage.removeItem('loggedInUser');
-      window.electronAPI.navigateToIndex();
-    });
-  }
-
-  if (logo) {
-    logo.addEventListener('click', () => {
-      window.electronAPI.getAuthUser().then(user => {
-        if (user) {
-          // 로그인된 상태에서 mainpage.html로 이동 또는 새로고침
-          if (window.location.pathname !== '/mainpage.html') {
-            window.location.href = 'mainpage.html';
-          } else {
-            window.location.reload();  // 이미 mainpage.html에 있으면 새로고침
-          }
-        } else {
-          // 로그인되지 않은 경우 index.html로 이동
-          window.electronAPI.navigateToIndex();
-        }
+    // Add New Site 버튼 클릭 시 writepage.html로 이동
+    if (addButton) {
+      addButton.addEventListener('click', () => {
+        console.log("Navigating to write page"); // 디버깅용 로그
+        window.electronAPI.navigateToWritePage(); // 페이지 이동 호출
       });
-    });
-  }
-  
-  const dataDisplay = document.getElementById('dataDisplay');
+    } else {
+      console.error("addButton 요소를 찾을 수 없습니다.");
+    }
 
-  window.electronAPI.getDataFromDB('sites').then((data) => {
-    if (data && data.length > 0) {
-      dataDisplay.innerHTML = data.map(site => `
+    const sites = await window.electronAPI.getUserSites(userEmail);
+    if (sites.length > 0) {
+      dataDisplay.innerHTML = sites.map(site => `
         <div class="site-entry">
           <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}">
             <img src="icon.png" alt="${site.name} icon" width="50" height="50">
@@ -57,36 +37,35 @@ window.onload = () => {
           </button>
         </div>
       `).join('');
-
-      // 각 아이콘 클릭 시 자동 로그인 처리
+  
+      // 각 사이트 버튼에 자동 로그인 이벤트 추가
       const siteIcons = document.querySelectorAll('.site-icon');
       siteIcons.forEach(icon => {
-        icon.addEventListener('click', (event) => {
+        icon.addEventListener('click', () => {
           const url = icon.getAttribute('data-url');
           const id = icon.getAttribute('data-id');
           const password = icon.getAttribute('data-password');
-
-          // 자동 로그인 처리
+  
+          // 자동 로그인 요청
           window.electronAPI.autoLogin(url, id, password);
         });
       });
     } else {
       dataDisplay.innerHTML = "<p>등록된 사이트 정보가 없습니다.</p>";
     }
-  }).catch(error => {
-    console.error('데이터 불러오기 중 오류 발생:', error);
-    dataDisplay.innerHTML = "<p>데이터를 불러오는 중 오류가 발생했습니다.</p>";
-  });
-
-  logOutButton.addEventListener('click', () => {
-    window.electronAPI.logOut();
-    localStorage.removeItem('loggedInUser');
-    window.electronAPI.navigateToIndex();
-  });
-
-  // 데이터 쓰기 페이지로 이동
-  addButton.addEventListener('click', () => {
-    window.electronAPI.navigateToWritePage();
-  });
   
-};
+    if (logo) {
+      logo.addEventListener('click', async () => {
+        const user = await window.electronAPI.getAuthUser();
+        if (user) {
+          if (window.location.pathname !== '/mainpage.html') {
+            window.location.href = 'mainpage.html';
+          } else {
+            window.location.reload();
+          }
+        } else {
+          window.electronAPI.navigateToIndex();
+        }
+      });
+    }
+  };

@@ -10,6 +10,9 @@ window.onload = () => {
         return;
       }
 
+      // 이메일을 localStorage에 저장
+      localStorage.setItem('userEmail', email);
+
       // 이메일을 전달하여 얼굴 인증 페이지로 이동
       window.location.href = `login_face.html?email=${encodeURIComponent(email)}`;
     });
