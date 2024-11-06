@@ -25,17 +25,19 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
 
-let loggedInUserEmail = null; // 로그인된 사용자의 이메일
-setPersistence(auth, browserSessionPersistence)
-  .then(() => console.log("세션 지속성을 SESSION으로 설정했습니다."))
-  .catch(error => console.error("세션 지속성 설정 중 오류:", error.message));
+  let loggedInUserEmail = null; // 로그인된 사용자의 이메일
+  setPersistence(auth, browserSessionPersistence)
+    .then(() => console.log("세션 지속성을 SESSION으로 설정했습니다."))
+    .catch(error => console.error("세션 지속성 설정 중 오류:", error.message));
 
-onAuthStateChanged(auth, (user) => {
-  loggedInUserEmail = user ? user.email : null;
-  BrowserWindow.getAllWindows().forEach(window => {
-    window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
+  // Firebase 인증 상태 변경 시 사용자 이메일 업데이트
+  onAuthStateChanged(auth, (user) => {
+    loggedInUserEmail = user ? user.email : null;
+    BrowserWindow.getAllWindows().forEach(window => {
+      window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
+    });
+    console.log(`로그인 상태 변경: ${loggedInUserEmail ? '로그인됨' : '로그아웃됨'}`);
   });
-});
 
   
 
@@ -92,7 +94,7 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
     }
 
     // Python 스크립트를 실행하고 임시 파일 경로를 전달
-    execFile('python', [pythonScriptPath, tempImagePath], (error, stdout, stderr) => {
+    execFile('python3', [pythonScriptPath, tempImagePath], (error, stdout, stderr) => {
       // 실행 후 임시 파일 삭제
       fs.unlink(tempImagePath, (unlinkErr) => {
         if (unlinkErr) {
@@ -380,4 +382,47 @@ auth.setPersistence(browserSessionPersistence)
   console.error("세션 지속성 설정 중 오류:", error.message);
 });
 
+// url 입력 후 새로운 창 열기
+ipcMain.on('open-url-in-new-window', (event, url) => {
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
 
+  win.loadURL(url.startsWith('http') ? url : `https://${url}`);
+
+  win.webContents.on('did-finish-load', () => {
+    console.log("페이지 로드 완료 및 MutationObserver 설정");
+  });
+
+  // 페이지 로드 후 MutationObserver 추가
+  // MutationObserver 및 폼 감지 추가
+  // 로그인 폼이 있는지 감지
+  
+
+  // Firestore에 사이트 데이터 저장
+  ipcMain.on('save-site-data', async (event, siteData) => {
+    const { id, password, url, userEmail } = siteData;
+  
+    if (userEmail) {
+      try {
+        const collectionPath = `users/${userEmail}/sites`;
+        await setDoc(doc(db, collectionPath, url), { id, password, url });
+        console.log('Firestore에 사이트 데이터 저장 성공:', { id, password, url });
+        event.sender.send('save-site-data-response', true); // 저장 성공
+      } catch (error) {
+        console.error('Firestore에 사이트 데이터 저장 실패:', error);
+        event.sender.send('save-site-data-response', false); // 저장 실패
+      }
+    } else {
+      console.log('사용자가 로그인되어 있지 않습니다.');
+      event.sender.send('save-site-data-response', false);
+    }
+  });
+  
+});

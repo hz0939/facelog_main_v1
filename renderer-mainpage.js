@@ -69,3 +69,16 @@ window.onload = async () => {
       });
     }
   };
+
+// URL 입력 및 사이트 이동
+document.getElementById('go-button').addEventListener('click', () => {
+  const urlInput = document.getElementById('url-input').value.trim();
+  const url = urlInput.startsWith('http') ? urlInput : `https://${urlInput}`;
+  
+  if (url) {
+    console.log("열려는 URL:", url); // 디버깅용 로그
+    window.electronAPI.openUrlInNewWindow(url);
+  } else {
+    console.error("URL이 비어 있습니다.");
+  }
+});
