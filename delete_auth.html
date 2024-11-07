@@ -1,0 +1,31 @@
+<!-- delete_auth.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>탈퇴 인증</title>
+  <style>
+    video {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+  <script defer src="renderer-delete-auth.js"></script>
+</head>
+<body>
+  <header>
+    <h1>탈퇴 전 얼굴 인증</h1>
+  </header>
+  <main>
+    <video id="video" autoplay></video>
+    <button id="captureButton">캡처</button>
+  </main>
+</body>
+</html>

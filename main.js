@@ -3,10 +3,11 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection,getDoc,addDoc, setDoc, doc, getDocs} = require('firebase/firestore');
+const { getFirestore, collection,getDoc,addDoc, setDoc, doc, getDocs, deleteDoc} = require('firebase/firestore');
 const { getAuth, onAuthStateChanged, setPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,browserSessionPersistence,signOut, } = require('firebase/auth'); 
 const fs = require('fs');
 const { execFile } = require('child_process');
+const admin = require('firebase-admin');
 
 
 
@@ -110,6 +111,15 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
 
       console.log(`FaceNet 임베딩 결과: ${stdout}`);
       event.sender.send('face-embedding-result', stdout);
+
+      // 회원 탈퇴용
+      // 임베딩 결과를 배열로 변환
+      const embeddingArray = stdout
+        .trim()
+        .replace(/tensor\(|\)|\s+/g, '')
+        .split(',')
+        .map(Number);
+      event.sender.send('face-embedding-result', JSON.stringify(embeddingArray));
     });
   });
 });
@@ -196,6 +206,46 @@ ipcMain.on('logout', async (event) => {
   } catch (error) {
     console.error(`로그아웃 실패: ${error.message}`);
     event.sender.send('logout-failed', error.message);
+  }
+});
+
+// 회원탈퇴
+ipcMain.on('navigate-to-delete-auth', () => {
+  win.loadFile('delete_auth.html');
+});
+
+// 회원 탈퇴 메서드 정의
+ipcMain.handle('delete-user-doc', async (event, userEmail) => {
+  try {
+    const userDocRef = doc(db, `users/${userEmail}`);
+    await deleteDoc(userDocRef);
+    console.log(`User document for ${userEmail} deleted successfully.`);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting user document for ${userEmail}:`, error);
+    throw error;
+  }
+});
+
+// Firebase Authentication에서 사용자 삭제 함수
+async function deleteAuthUser(userEmail) {
+  try {
+    const userRecord = await admin.auth().getUserByEmail(userEmail);
+    await admin.auth().deleteUser(userRecord.uid);
+    console.log(`User with email ${userEmail} deleted from Authentication.`);
+  } catch (error) {
+    console.error(`Error deleting authenticated user:`, error);
+  }
+}
+
+// 'delete-auth-user' 이벤트 핸들러 수정
+ipcMain.handle('delete-auth-user', async (event, userEmail) => {
+  try {
+    await deleteAuthUser(userEmail);
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting authenticated user:', error);
+    return { success: false, error: error.message };
   }
 });
 

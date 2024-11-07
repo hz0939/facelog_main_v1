@@ -68,6 +68,16 @@ window.onload = async () => {
         }
       });
     }
+
+    // 회원 탈퇴
+    const deleteAccountButton = document.getElementById('deleteAccountButton');
+
+    if (deleteAccountButton) {
+      deleteAccountButton.addEventListener('click', () => {
+        // 탈퇴 전 얼굴 인증 페이지로 이동
+        window.electronAPI.navigateToDeleteAuth();
+      });
+    }
   };
 
 // URL 입력 및 사이트 이동

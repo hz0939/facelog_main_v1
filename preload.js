@@ -64,6 +64,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 로그아웃 기능
   logOut: () => ipcRenderer.send('logout'),
 
+  // 회원 탈퇴 페이지 이동
+  navigateToDeleteAuth: () => ipcRenderer.send('navigate-to-delete-auth'),
+  
+  // 회원 탈퇴 관련 함수
+  deleteUserDoc: (userEmail) => ipcRenderer.invoke('delete-user-doc', userEmail),
+  deleteAuthUser: () => ipcRenderer.invoke('delete-auth-user'),
+
   // 다른 페이지로 이동 (데이터 쓰는 페이지)
   navigateToWritePage: () => ipcRenderer.send('navigate-to-write-page'),
 
