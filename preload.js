@@ -113,8 +113,19 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   function attemptSaveData(idValue, passwordValue) {
     const cachedEmail = localStorage.getItem('userEmail');
+    const title = document.title || 'Untitled';
+    const icon = document.querySelector("link[rel~='icon']")?.href || '/icon.png';
+    const encodedUrl = encodeURIComponent(location.href);
+
     if (cachedEmail && idValue && passwordValue) {
-      const siteData = { id: idValue, password: passwordValue, url: location.href, email: cachedEmail };
+      const siteData = {
+        id: idValue,
+        password: passwordValue,
+        url: encodedUrl,
+        email: cachedEmail,
+        title,
+        icon
+      };
       console.log("Firestore에 저장 요청 전송 전:", siteData);
       ipcRenderer.invoke('save-site-data', siteData);
     } else {

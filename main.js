@@ -9,7 +9,25 @@ const fs = require('fs');
 const { execFile } = require('child_process');
 const admin = require('firebase-admin');
 
+// ID와 패스워드 입력 필드의 셀렉터 리스트
+const idSelectors = [
+  'input[name="username"]',
+  'input[name="user"]',
+  'input[name="usr_id"]',
+  'input[name="id"]',
+  'input[name="login"]',
+  'input[id="username"]',
+  'input[id="userid"]',
+];
 
+const passwordSelectors = [
+  'input[name="password"]',
+  'input[name="pass"]',
+  'input[name="pw"]',
+  'input[name="usr_pw"]',
+  'input[id="password"]',
+  'input[id="userpw"]',
+];
 
 // Firebase 초기화
 const firebaseConfig = {
@@ -344,48 +362,34 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
       height: 600,
       webPreferences: {
         nodeIntegration: false,
-        contextIsolation: true
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js')
       }
     });
 
-    loginWindow.loadURL(url);  // 로그인 페이지로 이동
+    const decodedUrl = decodeURIComponent(url);
+    loginWindow.loadURL(decodedUrl);
 
-    // 창이 로드된 후 로그인 폼 자동 채우기
     loginWindow.webContents.on('did-finish-load', () => {
-      if (!loginWindow || loginWindow.isDestroyed()) {
-        console.log('BrowserWindow has been destroyed.');
-        return;  // 창이 파괴된 경우 중단
-      }
-
+      console.log('페이지 로드 완료, 자동 로그인 시도 중...');
       loginWindow.webContents.executeJavaScript(`
-        const idField = document.myform?.m_id;
-        const passwordField = document.myform?.m_pwd1;
+        const idField = document.querySelector('${idSelectors.join(', ')}');
+        const passwordField = document.querySelector('${passwordSelectors.join(', ')}');
 
         if (idField && passwordField) {
           idField.value = "${id}";
           passwordField.value = "${password}";
-          document.myform.submit();  // 로그인 폼 제출
+          console.log('자동 로그인 폼 입력 완료');
+          document.forms[0].submit();
         } else {
           console.error('ID 또는 비밀번호 필드를 찾을 수 없습니다.');
         }
-      `).then(() => {
-        console.log('Login form submitted.');
-      }).catch((error) => {
-        console.error('자동 로그인 처리 중 오류 발생:', error);
-      });
+      `);
     });
 
-    // 로컬에 정보가 남지 않도록 창이 닫힐 때 쿠키와 세션 삭제
     loginWindow.on('closed', () => {
-      if (loginWindow && !loginWindow.isDestroyed()) {
-        loginWindow.webContents.session.clearStorageData().then(() => {
-          console.log('Session data cleared.');
-        }).catch((error) => {
-          console.error('세션 데이터 삭제 중 오류 발생:', error);
-        });
-      }
+      loginWindow.webContents.session.clearStorageData();
     });
-
   } catch (error) {
     console.error('자동 로그인 처리 중 오류 발생:', error);
   }
@@ -488,15 +492,17 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
 
 // Firestore에 사이트 데이터 저장
 ipcMain.handle('save-site-data', async (event, siteData) => {
-  const { id, password, url, email } = siteData;
+  const { id, password, url, email, title, icon } = siteData;
   if (email) {
     try {
-      const encodedUrl = encodeURIComponent(url);  // URL 인코딩
+      const encodedUrl = encodeURIComponent(url);
       const collectionPath = `users/${email}/sites`;
-      await setDoc(doc(db, collectionPath, encodedUrl), {  // 인코딩된 URL 사용
+      await setDoc(doc(db, collectionPath, encodedUrl), {
         id,
         password,
         url,
+        title: title || 'Untitled',
+        icon: icon || '/icon.png'
       });
       console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
     } catch (error) {

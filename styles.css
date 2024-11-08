@@ -79,3 +79,36 @@ main {
   color: #333;                     /* 텍스트 색상을 진한 회색(#333)으로 설정 */
   margin-top: 20px;                /* 사용자 정보 위쪽에 20px의 여백 추가 */
 }
+
+.site-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.site-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+/* 사이트 아이콘 및 제목 스타일 */
+.site-icon-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain; /* 아이콘이 잘리지 않고 비율 유지 */
+}
+
+.site-title {
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; /* 제목 길이 제한 */
+}
+
+.site-url {
+  font-size: 14px;
+  color: #555;
+}
