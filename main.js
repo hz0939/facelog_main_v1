@@ -147,9 +147,13 @@ ipcMain.on('sign-up', async (event, { email, password }) => {
   }
 });
 
+// get-auth-user 핸들러 수정
 ipcMain.handle('get-auth-user', async () => {
-  return loggedInUserEmail ? { email: loggedInUserEmail } : null;
+  return userEmail ? { email: userEmail } : null;
 });
+//ipcMain.handle('get-auth-user', async () => {
+  //return loggedInUserEmail ? { email: loggedInUserEmail } : null;
+//});
 
 
 ipcMain.handle('save-user-embedding', async (event, { email, faceEmbedding }) => {
@@ -184,23 +188,26 @@ ipcMain.handle('get-user-doc', async (event, email) => {
   }
 });
 
+
+// 로그인 성공 시 이메일 업데이트
 ipcMain.on('login', async (event, { email, password }) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const loggedInEmail = userCredential.user.email;
+    userEmail = userCredential.user.email;
+    console.log("로그인 성공:", userEmail);
 
-    console.log("로그인 성공:", loggedInEmail);
-    event.sender.send('login-success', { email: loggedInEmail });
+    event.sender.send('login-success', { email: userEmail });
 
-    // 로그인 성공 시 이메일을 localStorage에 저장
+    // localStorage에 이메일 저장
     BrowserWindow.getAllWindows().forEach(window => {
-      window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${loggedInEmail}')`);
+      window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${userEmail}')`);
     });
   } catch (error) {
     console.error("로그인 실패:", error.message);
     event.sender.send('login-failed', error.message);
   }
 });
+
 
 //ipcMain.on('login', async (event, { email, password }) => {
   //try {
@@ -414,8 +421,8 @@ ipcMain.on('navigate-to-face-auth', () => {
 
 ipcMain.on('navigate-to-mainpage', () => {
   win.loadFile('mainpage.html').then(() => {
-    if (loggedInUserEmail) {
-      win.webContents.send('logged-in', loggedInUserEmail);
+    if (userEmail) {
+      win.webContents.send('logged-in', userEmail);
     }
   });
 });

@@ -89,7 +89,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     } catch (error) {
       console.error("Firestore에 사이트 데이터 저장 실패:", error);
     }
-  }
+  },
+  getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
+
 });
 
 
