@@ -1,6 +1,9 @@
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
 
+const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
+const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+
 contextBridge.exposeInMainWorld('electronAPI', {
 
   startWebcam: () => {
@@ -61,7 +64,89 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 로그아웃 기능
   logOut: () => ipcRenderer.send('logout'),
 
-  // 다른 페이지로 이동 (데이터 쓰는 페이지)
-  navigateToWritePage: () => ipcRenderer.send('navigate-to-write-page')
+  // 회원 탈퇴 페이지 이동
+  navigateToDeleteAuth: () => ipcRenderer.send('navigate-to-delete-auth'),
+  
+  // 회원 탈퇴 관련 함수
+  deleteUserDoc: (userEmail) => ipcRenderer.invoke('delete-user-doc', userEmail),
+  deleteAuthUser: () => ipcRenderer.invoke('delete-auth-user'),
 
+  // 다른 페이지로 이동 (데이터 쓰는 페이지)
+  navigateToWritePage: () => ipcRenderer.send('navigate-to-write-page'),
+
+  // url 입력 후 새로운 창 열기
+  openUrlInNewWindow: (url) => ipcRenderer.send('open-url-in-new-window', url),
+  saveSiteData: (data) => ipcRenderer.send('save-site-data', data),
+
+  // 이메일 정보를 로컬 스토리지에서 가져오는 메서드
+  
+  // 사이트 데이터를 저장하는 메서드
+  saveSiteData: async (siteData) => {
+    try {
+      // Firestore에 사이트 데이터를 저장 요청
+      await ipcRenderer.invoke('save-site-data', siteData);
+      console.log("Firestore에 사이트 데이터 저장 성공:", siteData);
+    } catch (error) {
+      console.error("Firestore에 사이트 데이터 저장 실패:", error);
+    }
+  }
+});
+
+
+window.addEventListener("DOMContentLoaded", async () => {
+  console.log("페이지 로드 완료 및 MutationObserver 설정");
+
+  try {
+    const userEmail = await ipcRenderer.invoke('get-user-email');
+    console.log("ipcRenderer로 가져온 이메일:", userEmail);
+    if (userEmail) {
+      localStorage.setItem('userEmail', userEmail);
+    } else {
+      console.warn("사용자가 로그인되어 있지 않거나 이메일을 가져올 수 없습니다.");
+    }
+  } catch (error) {
+    console.error("이메일 가져오기 실패:", error);
+  }
+
+  // ID와 비밀번호 필드 탐색 셀렉터 설정
+  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
+  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+
+  function captureLoginForm() {
+      const idField = document.querySelector(idSelectors.join(', '));
+      const passwordField = document.querySelector(passwordSelectors.join(', '));
+
+      if (idField && passwordField) {
+          console.log("ID와 비밀번호 입력 필드 감지됨");
+
+          idField.addEventListener('input', () => console.log("ID 필드 입력됨:", idField.value));
+          passwordField.addEventListener('input', () => console.log("Password 필드 입력됨:", passwordField.value));
+
+          const form = idField.closest('form') || passwordField.closest('form');
+          if (form) {
+              form.addEventListener('submit', (event) => {
+                  event.preventDefault();
+                  const id = idField.value.trim();
+                  const password = passwordField.value.trim();
+
+                  if (id && password && userEmail) {
+                      console.log("Firestore에 저장 요청 전송 전:", { id, password, url: window.location.href });
+                      window.api.send("save-site-data", { id, password, url: window.location.href, email: userEmail });
+
+                      // 페이지 전환 지연
+                      setTimeout(() => form.submit(), 2000);
+                  } else {
+                      console.log("사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.");
+                  }
+              });
+          }
+      } else {
+          console.log("입력 필드가 감지되지 않음");
+      }
+  }
+
+  // MutationObserver 설정
+  const observer = new MutationObserver(captureLoginForm);
+  observer.observe(document.body, { childList: true, subtree: true });
+  captureLoginForm();
 });
