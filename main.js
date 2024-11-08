@@ -459,6 +459,7 @@ auth.setPersistence(browserSessionPersistence)
   console.error("세션 지속성 설정 중 오류:", error.message);
 });
 
+
 // url 입력 후 새로운 창 열기
 ipcMain.on('open-url-in-new-window', (_event, url) => {
   const win = new BrowserWindow({
@@ -496,7 +497,7 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
       console.log('사용자가 로그인되어 있지 않습니다.');
   }
   
-});
+ });
 
 // 이메일 설정 이벤트
 ipcMain.on('set-user-email', (event, email) => {
