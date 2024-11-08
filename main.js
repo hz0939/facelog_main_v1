@@ -486,25 +486,26 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
   });
   });
 
-  // Firestore에 사이트 데이터 저장
-  ipcMain.on('save-site-data', async (event, siteData) => {
-    if (userEmail) {
-      try {
-        const collectionPath = `users/${userEmail}/sites`;
-          await setDoc(doc(db, collectionPath, siteData.url), {
-            id: siteData.id,
-            password: siteData.password,
-            url: siteData.url
-            });
-            console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
-        } catch (error) {
-            console.error('Firestore에 사이트 데이터 저장 실패:', error);
-        }
+// Firestore에 사이트 데이터 저장
+ipcMain.handle('save-site-data', async (event, siteData) => {
+  const { id, password, url, email } = siteData;
+  if (email) {
+    try {
+      const encodedUrl = encodeURIComponent(url);  // URL 인코딩
+      const collectionPath = `users/${email}/sites`;
+      await setDoc(doc(db, collectionPath, encodedUrl), {  // 인코딩된 URL 사용
+        id,
+        password,
+        url,
+      });
+      console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
+    } catch (error) {
+      console.error('Firestore에 사이트 데이터 저장 실패:', error);
+    }
   } else {
-      console.log('사용자가 로그인되어 있지 않습니다.');
+    console.log('사용자가 로그인되어 있지 않습니다.');
   }
-  
- });
+});
 
 // 이메일 설정 이벤트
 ipcMain.on('set-user-email', (event, email) => {
