@@ -46,6 +46,18 @@ main {
   top: 20px;            /* 화면 상단에서 20px 떨어짐 */
   right: 20px;          /* 화면 오른쪽에서 20px 떨어짐 */
   padding: 10px 20px;   /* 버튼 내부 여백 */
+  background-color: blue; /* 로그아웃 버튼의 배경색 (빨간색 계열) */
+  color: #fff;          /* 텍스트 색상 흰색 */
+  border: none;         /* 버튼 테두리 제거 */
+  cursor: pointer;      /* 마우스 커서가 포인터로 변경 */
+  border-radius: 5px;   /* 버튼 모서리 둥글게 설정 */
+}
+
+#deleteAccountButton {
+  position: absolute;   /* 절대 위치를 사용 */
+  top: 20px;            /* 화면 상단에서 20px 떨어짐 */
+  right: 120px;          /* 화면 오른쪽에서 20px 떨어짐 */
+  padding: 10px 20px;   /* 버튼 내부 여백 */
   background-color: #ff4d4d; /* 로그아웃 버튼의 배경색 (빨간색 계열) */
   color: #fff;          /* 텍스트 색상 흰색 */
   border: none;         /* 버튼 테두리 제거 */
@@ -67,15 +79,273 @@ main {
 }
 
 
-/* 로그인 버튼의 스타일 (다른 버튼과 색상 차별화) */
-#loginButton {
-  background-color: #333;          /* 버튼 배경을 진한 회색(#333)으로 설정 */
-  color: #fff;                     /* 버튼 텍스트 색상을 흰색으로 설정 */
-}
+
 
 /* 사용자 정보 섹션의 스타일 */
 .user-info {
   font-size: 1.2rem;               /* 사용자 정보의 글꼴 크기를 1.2rem으로 설정 */
   color: #333;                     /* 텍스트 색상을 진한 회색(#333)으로 설정 */
   margin-top: 20px;                /* 사용자 정보 위쪽에 20px의 여백 추가 */
+}
+
+/* 사이트 아이콘 및 제목 스타일 수정 */
+.site-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.site-icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  background-color: #f0f0f0; /* 회색 배경 */
+  border-radius: 50%; /* 원형 모양 */
+  border-color: #f0f0f0;
+  margin: 0 auto; /* 중앙 정렬 */
+}
+
+.site-entry {
+  display: inline-block;
+  text-align: center;
+  width: 160px;
+  margin: 0 15px;
+  flex-direction: column; /* 세로 방향으로 정렬 */
+  align-items: center;    /* 중앙 정렬 */
+  justify-content: center; /* 수직 중앙 정렬 */
+}
+
+.site-icon-img {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.site-title {
+  font-size: 12px;
+  white-space: nowrap;
+  margin-top: 10px;
+  color: #333;
+  text-align: center; /* 타이틀을 중앙 정렬 */
+}
+
+/* 구글 검색창 스타일의 URL 입력창 */
+#url-input {
+  width: 300px;
+  height: 40px;
+  margin-top: 15px;
+  padding: 0 15px;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* 입력 시 포커스 스타일 */
+#url-input:focus {
+  border-color: #4285f4;
+  box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
+}
+
+/* Go 버튼 스타일 */
+#go-button {
+  height: 40px;
+  padding: 0 15px;
+  margin-left: 10px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #4285f4;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#go-button:hover {
+  background-color: #357ae8;
+}
+
+#go-button:active {
+  background-color: #2c5bbf;
+}
+
+/* 로그인/회원가입 입력창 스타일 (구글 검색창 스타일 적용) */
+/* 회원가입 입력 필드 스타일 */
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px; /* 필드 간 간격 */
+  margin-top: 20px;
+}
+
+#email,
+#password {
+  width: 300px;
+  height: 40px;
+  margin: 10px auto;
+  padding: 0 15px;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* 입력창 포커스 시 스타일 */
+#email:focus,
+#password:focus {
+  border-color: #4285f4;
+  box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
+}
+
+/* 로그인/회원가입 버튼 스타일 */
+#submitLogin,
+#submitSignUp {
+  width: 120px;
+  height: 40px;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #4285f4;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#submitLogin:hover,
+#submitSignUp:hover {
+  background-color: #357ae8;
+}
+
+#submitLogin:active,
+#submitSignUp:active {
+  background-color: #2c5bbf;
+}
+
+/* 메인 화면 버튼 스타일 업데이트 */
+#signUpButton,
+#loginButton {
+  width: 150px;
+  height: 40px;
+  margin: 10px auto;
+  font-size: 14px;
+  color: #fff;
+  background-color: #4285f4;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 회원가입 버튼 회색 스타일 */
+#signUpButton {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+#signUpButton:hover {
+  background-color: #e0e0e0;
+}
+
+#signUpButton:active {
+  background-color: #d0d0d0;
+}
+
+/* 로그인 버튼 파란색 스타일 */
+#loginButton {
+  background-color: #4285f4;
+  color: #fff;
+}
+
+#loginButton:hover {
+  background-color: #357ae8;
+}
+
+#loginButton:active {
+  background-color: #2c5bbf;
+}
+
+/* 사이트 등록 입력 필드 스타일 (블루&라운드 스타일 적용) */
+#site-name,
+#site-url,
+#site-id,
+#site-password {
+    width: 300px;
+    height: 40px;
+    margin: 5px auto;
+    padding: 0 15px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 입력 필드 포커스 스타일 */
+#site-name:focus,
+#site-url:focus,
+#site-id:focus,
+#site-password:focus {
+    border-color: #4285f4;
+    box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
+}
+
+/* 제출 버튼 스타일 */
+#submit-button {
+    width: 150px;
+    height: 40px;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #4285f4;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+#submit-button:hover {
+    background-color: #357ae8;
+}
+
+#submit-button:active {
+    background-color: #2c5bbf;
+}
+
+/* 뒤로 가기 버튼 스타일 */
+.back-button {
+    width: 150px;
+    height: 40px;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #333;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.back-button:hover {
+    background-color: #e0e0e0;
+}
+
+.back-button:active {
+    background-color: #d0d0d0;
 }
