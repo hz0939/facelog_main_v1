@@ -97,40 +97,31 @@ window.onload = async () => {
   });
 
   // 삭제 버튼 클릭 시 Firestore에서 데이터 삭제
-  // 삭제 버튼 클릭 시 Firestore에서 데이터 삭제
-document.querySelectorAll('.delete-button').forEach(button => {
-  button.addEventListener('click', async (event) => {
-    event.stopPropagation();
-    const siteEntry = button.closest('.site-entry');
-    const siteUrl = siteEntry.querySelector('.site-icon').getAttribute('data-url');
+  document.querySelectorAll('.delete-button').forEach(button => {
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const siteEntry = button.closest('.site-entry');
+      const siteUrl = siteEntry.querySelector('.site-icon').getAttribute('data-url');
 
-    // URL을 한 번만 인코딩하여 Firestore의 문서 ID 형식과 일치시킴
-    const docId = encodeURIComponent(siteUrl);
-    console.log("Firestore에서 삭제 요청할 한 번 인코딩된 문서 ID:", docId);
+      // URL을 한 번만 인코딩하여 Firestore의 문서 ID 형식과 일치시킴
+      const docId = encodeURIComponent(siteUrl);
+      console.log("Firestore에서 삭제 요청할 한 번 인코딩된 문서 ID:", docId);
 
-    if (!docId) {
-      alert("삭제할 문서 ID가 없습니다.");
-      return;
-    }
+      if (!docId) {
+        alert("삭제할 문서 ID가 없습니다.");
+        return;
+      }
 
-    try {
-      await window.electronAPI.deleteSiteData(userEmail, docId);
-      alert('사이트 정보가 Firestore에서 삭제되었습니다.');
-      location.reload(); // 삭제 후 페이지 새로고침
-    } catch (error) {
-      console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
-      alert('사이트 삭제에 실패했습니다.');
-    }
+      try {
+        await window.electronAPI.deleteSiteData(userEmail, docId);
+        alert('사이트 정보가 Firestore에서 삭제되었습니다.');
+        location.reload(); // 삭제 후 페이지 새로고침
+      } catch (error) {
+        console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
+        alert('사이트 삭제에 실패했습니다.');
+      }
+    });
   });
-});
-
-
-
-
-
-
-
-
 
   // 로고 클릭 시 메인 페이지로 이동
   if (logo) {
@@ -163,3 +154,13 @@ document.querySelectorAll('.delete-button').forEach(button => {
     }
   });
 };
+
+// 'refresh-main-page' 이벤트 수신 시 Firestore에서 최신 사이트 정보 불러오기
+window.electronAPI.on('refresh-main-page-to-renderer', async () => {
+  console.log("메인 페이지에서 'refresh-main-page-to-renderer' 이벤트 수신됨, Firestore에서 최신 데이터 불러오기");
+  const userEmail = localStorage.getItem('userEmail');
+  if (userEmail) {
+    await loadUserSites(userEmail);
+  }
+});
+
