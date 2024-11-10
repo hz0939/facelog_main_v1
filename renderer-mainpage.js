@@ -41,10 +41,15 @@ window.onload = async () => {
   
       return `
         <div class="site-entry">
-          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}">
+          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}" data-doc-id="${site.id}">
             <img class="site-icon-img" src="${site.icon || 'default-icon.png'}" alt="${fullTitle} icon">
             <p class="site-title">${shortTitle}</p>
           </button>
+          <button class="more-options">...</button>
+          <div class="context-menu">
+            <button class="edit-button">바로가기 수정</button>
+            <button class="delete-button">삭제</button>
+          </div> 
         </div>
       `;
     }).join('');
@@ -73,6 +78,59 @@ window.onload = async () => {
   } else {
     dataDisplay.innerHTML = "<p>등록된 사이트 정보가 없습니다.</p>";
   }
+
+  // more-options 버튼 클릭 시 context-menu 표시
+  document.querySelectorAll('.more-options').forEach(button => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const siteEntry = button.closest('.site-entry');
+      const contextMenu = siteEntry.querySelector('.context-menu');
+      contextMenu.style.display = 'block';
+
+      // 다른 곳 클릭 시 메뉴 닫기
+      document.addEventListener('click', (e) => {
+        if (!contextMenu.contains(e.target)) {
+          contextMenu.style.display = 'none';
+        }
+      }, { once: true });
+    });
+  });
+
+  // 삭제 버튼 클릭 시 Firestore에서 데이터 삭제
+  // 삭제 버튼 클릭 시 Firestore에서 데이터 삭제
+document.querySelectorAll('.delete-button').forEach(button => {
+  button.addEventListener('click', async (event) => {
+    event.stopPropagation();
+    const siteEntry = button.closest('.site-entry');
+    const siteUrl = siteEntry.querySelector('.site-icon').getAttribute('data-url');
+
+    // URL을 한 번만 인코딩하여 Firestore의 문서 ID 형식과 일치시킴
+    const docId = encodeURIComponent(siteUrl);
+    console.log("Firestore에서 삭제 요청할 한 번 인코딩된 문서 ID:", docId);
+
+    if (!docId) {
+      alert("삭제할 문서 ID가 없습니다.");
+      return;
+    }
+
+    try {
+      await window.electronAPI.deleteSiteData(userEmail, docId);
+      alert('사이트 정보가 Firestore에서 삭제되었습니다.');
+      location.reload(); // 삭제 후 페이지 새로고침
+    } catch (error) {
+      console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
+      alert('사이트 삭제에 실패했습니다.');
+    }
+  });
+});
+
+
+
+
+
+
+
+
 
   // 로고 클릭 시 메인 페이지로 이동
   if (logo) {
