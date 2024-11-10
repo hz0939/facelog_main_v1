@@ -52,8 +52,14 @@ window.onload = async () => {
         console.log("이동할 URL:", url);
         console.log("자동 로그인 정보 - ID:", id, "Password:", password);
 
-        // URL로 이동 후 자동 로그인 시도
-        await window.electronAPI.autoLogin(url, id, password);
+        try {
+          console.log("자동 로그인 시작");
+          window.electronAPI.send('disable-observer');
+          await window.electronAPI.autoLogin(url, id, password);
+          window.electronAPI.send('enable-observer');
+        } catch (error) {
+          console.error("자동 로그인 중 오류 발생:", error);
+        }
       });
     });
   } else {

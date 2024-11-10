@@ -1,8 +1,8 @@
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
 
-const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
-const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
+const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
 
 contextBridge.exposeInMainWorld('electronAPI', {
 
@@ -107,8 +107,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ID와 비밀번호 필드 탐색 셀렉터 설정
-  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
-  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
+  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
   let saveTimeout;
 
   function attemptSaveData(idValue, passwordValue) {
@@ -133,7 +133,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  let isAutoLoginInProgress = false;
   function monitorInputFields() {
+    if (isAutoLoginInProgress) return; // 자동 로그인 중일 때 감시 중단
+
     const idField = document.querySelector(idSelectors.join(', '));
     const passwordField = document.querySelector(passwordSelectors.join(', '));
 
@@ -154,3 +157,21 @@ window.addEventListener("DOMContentLoaded", async () => {
   observer.observe(document.body, { childList: true, subtree: true });
   monitorInputFields();
 });
+
+ipcRenderer.on('disable-observer', () => {
+  isAutoLoginInProgress = true;
+  observer.disconnect();
+  console.log("MutationObserver 완전 비활성화됨");
+});
+
+ipcRenderer.on('enable-observer', () => {
+  isAutoLoginInProgress = false;
+  try {
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log("MutationObserver 다시 활성화됨");
+  } catch (error) {
+    console.error("MutationObserver 활성화 중 오류 발생:", error);
+  }
+});
+
+

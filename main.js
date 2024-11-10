@@ -18,6 +18,7 @@ const idSelectors = [
   'input[name="login"]',
   'input[id="username"]',
   'input[id="userid"]',
+  'input[name="userId"]',
 ];
 
 const passwordSelectors = [
@@ -27,6 +28,7 @@ const passwordSelectors = [
   'input[name="usr_pw"]',
   'input[id="password"]',
   'input[id="userpw"]',
+  'input[name="userPass"]',
 ];
 
 // Firebase 초기화
@@ -370,21 +372,37 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
     const decodedUrl = decodeURIComponent(url);
     loginWindow.loadURL(decodedUrl);
 
+    loginWindow.on('closed', () => {
+      console.log("loginWindow 닫힘");
+      loginWindow = null;
+    });
+
     loginWindow.webContents.on('did-finish-load', () => {
       console.log('페이지 로드 완료, 자동 로그인 시도 중...');
-      loginWindow.webContents.executeJavaScript(`
-        const idField = document.querySelector('${idSelectors.join(', ')}');
-        const passwordField = document.querySelector('${passwordSelectors.join(', ')}');
 
-        if (idField && passwordField) {
-          idField.value = "${id}";
-          passwordField.value = "${password}";
-          console.log('자동 로그인 폼 입력 완료');
-          document.forms[0].submit();
-        } else {
-          console.error('ID 또는 비밀번호 필드를 찾을 수 없습니다.');
-        }
-      `);
+      // MutationObserver 완전 비활성화
+      loginWindow.webContents.executeJavaScript(`
+        window.electronAPI.send('disable-observer');
+        console.log("MutationObserver 완전 비활성화됨");
+      `).catch(error => console.error('비활성화 스크립트 실행 중 오류 발생:', error));
+
+      setTimeout(() => {
+        loginWindow.webContents.executeJavaScript(`
+          const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="userId"]', 'input[type="text"]'];
+          const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userPass"]', 'input[type="password"]'];
+    
+          const idField = document.querySelector(idSelectors.join(', '));
+          const passwordField = document.querySelector(passwordSelectors.join(', '));
+    
+          if (idField && passwordField) {
+            idField.value = "${id}";
+            passwordField.value = "${password}";
+            console.log('자동 로그인 폼 입력 완료');
+          } else {
+            console.error('ID 또는 비밀번호 필드를 찾을 수 없습니다.');
+          }
+        `).catch(error => console.error('자동 로그인 스크립트 실행 중 오류 발생:', error));
+      }, 500); // 폼 입력 완료 후 0.5초 지연
     });
 
     loginWindow.on('closed', () => {
@@ -394,8 +412,6 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
     console.error('자동 로그인 처리 중 오류 발생:', error);
   }
 });
-
-
 
 
 
