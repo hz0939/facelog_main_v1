@@ -32,14 +32,22 @@ window.onload = async () => {
   // Firestore에서 사용자 사이트 정보 불러오기
   const sites = await window.electronAPI.getUserSites(userEmail);
   if (sites.length > 0) {
-    dataDisplay.innerHTML = sites.map(site => `
-      <div class="site-entry">
-        <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}">
-          <img src="${site.icon || 'default-icon.png'}" alt="${site.title || '사이트'} icon" width="50" height="50">
-          <p>${site.title || 'undefined'}</p>
-        </button>
-      </div>
-    `).join('');
+    dataDisplay.innerHTML = sites.map(site => {
+      const fullTitle = site.title || 'Untitled';
+      const maxLength = 7; // 제목 길이 제한
+      const shortTitle = fullTitle.length > maxLength ? `${fullTitle.slice(0, maxLength)}...` : fullTitle;
+  
+      console.log("원본 제목:", fullTitle, " | 잘린 제목:", shortTitle);
+  
+      return `
+        <div class="site-entry">
+          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}">
+            <img class="site-icon-img" src="${site.icon || 'default-icon.png'}" alt="${fullTitle} icon">
+            <p class="site-title">${shortTitle}</p>
+          </button>
+        </div>
+      `;
+    }).join('');
 
     // 각 사이트 아이콘 클릭 시 URL 이동 및 자동 로그인
     document.querySelectorAll('.site-icon').forEach(icon => {
