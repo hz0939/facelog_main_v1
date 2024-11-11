@@ -32,7 +32,20 @@ window.onload = () => {
     window.electronAPI.sendEmbeddingRequest(imageData);
   });
 
+  let isFetchingUserDoc = false;
+  window.electronAPI.removeAllListeners('face-embedding-result');
   window.electronAPI.onEmbeddingResult(async (newEmbedding) => {
+
+    if (isFetchingUserDoc) {
+      console.log('이미 사용자 데이터를 가져오는 중입니다.');
+      return;
+    }
+  
+    isFetchingUserDoc = true; // 플래그 설정
+  
+
+
+
     try {
       const userData = await window.electronAPI.getUserDoc(userEmail);
   
@@ -78,7 +91,7 @@ window.onload = () => {
         console.log('로그인 성공. 메인 페이지로 이동합니다.');
         window.location.href = 'mainpage.html';
       } else {
-        alert('얼굴이 일치하지 않습니다.');
+        alert('not matching face');
       }
     } catch (error) {
       console.error('사용자 데이터를 가져오는 중 오류:', error);

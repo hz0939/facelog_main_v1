@@ -25,12 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.sendEmbeddingRequest(imageData);
   });
 
-  // 얼굴 임베딩 결과 처리
+
+
+  console.log('onEmbeddingResult 메서드 호출 준비 완료');
+  
   window.electronAPI.onEmbeddingResult(async (faceEmbedding) => {
     console.log('임베딩 결과:', faceEmbedding);
 
     // 현재 로그인된 사용자 정보 가져오기
     const user = await window.electronAPI.getAuthUser(); 
+
     if (user) {
       try {
         // Firestore에 사용자 임베딩 저장
@@ -48,3 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+ 
