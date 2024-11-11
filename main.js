@@ -10,8 +10,6 @@ const { execFile } = require('child_process');
 const admin = require('firebase-admin');
 
 
-
-// Firebase 占십깍옙화
 const firebaseConfig = {
   apiKey: "AIzaSyCkiXse10TpCRQZ9thBSAO07U1mPh49_H8",
   authDomain: "looknlock-d163f.firebaseapp.com",
@@ -26,53 +24,54 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
 
-let loggedInUserEmail = null; // 占싸깍옙占싸듸옙 占쏙옙占쏙옙占쏙옙占� 占싱몌옙占쏙옙
+let loggedInUserEmail = null; // 로그인된 사용자의 이메일
  setPersistence(auth, browserSessionPersistence)
-  .then(() => console.log("占쏙옙占쏙옙 占쏙옙占쌈쇽옙占쏙옙 SESSION占쏙옙占쏙옙 占쏙옙占쏙옙占쌩쏙옙占싹댐옙."))
-  .catch(error => console.error("占쏙옙占쏙옙 占쏙옙占쌈쇽옙 占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙:", error.message));
+  .then(() => console.log("세션 지속성을 SESSION으로 설정했습니다."))
+  .catch(error => console.error("세션 지속성 설정 중 오류:", error.message));
 
-let userEmail = null;
-  // Firebase 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙占� 占싱몌옙占쏙옙 占쏙옙占쏙옙占쏙옙트
+  let userEmail = null;
+  // Firebase 인증 상태 변경 시 사용자 이메일 업데이트
   onAuthStateChanged(auth, (user) => {
     if (user) {
       userEmail = user.email;
-      console.log('占싸깍옙占쏙옙 占쏙옙占쏙옙, 占싱몌옙占쏙옙:', userEmail);
+      console.log('로그인 성공, 이메일:', userEmail);
       BrowserWindow.getAllWindows().forEach(window => {
         window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${userEmail}')`);
       });
     } else {
       userEmail = null;
-      console.log('占싸그아울옙占쏙옙');
+      console.log('로그아웃됨');
     }
     //loggedInUserEmail = user ? user.email : null;
     //BrowserWindow.getAllWindows().forEach(window => {
       //window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
     //});
-    //console.log(`占싸깍옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙: ${loggedInUserEmail ? '占싸깍옙占싸듸옙' : '占싸그아울옙占쏙옙'}`);
+    //console.log(`로그인 상태 변경: ${loggedInUserEmail ? '로그인됨' : '로그아웃됨'}`);
   });
 
   
-
-function createWindow() {
-  win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // Preload 占쏙옙크占쏙옙트占쏙옙 占쏙옙占쏙옙占� 占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占싸쇽옙占쏙옙 占쏙옙占쏙옙 占쏙옙占� 占쏙옙占쏙옙
-      contextIsolation: true,
-      nodeIntegration: false,  // NodeIntegration占쏙옙 占쏙옙활占쏙옙화占싹울옙 占쏙옙占쏙옙 占쏙옙화
+  function createWindow() {
+    win = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'), // Preload 스크립트를 사용해 렌더러와 메인 프로세스 간의 통신 설정
+        contextIsolation: true,
+        nodeIntegration: false,  // NodeIntegration을 비활성화하여 보안 강화
+      }
+    });
+  
+    win.loadFile('index.html');
+  
+    // 개발 환경에서 DevTools 열기
+    if (process.env.NODE_ENV === 'development') {
+      win.webContents.openDevTools();
     }
-  });
-
-  win.loadFile('index.html');
-
-  // 占쏙옙占쏙옙 환占썸에占쏙옙 DevTools 占쏙옙占쏙옙
-  if (process.env.NODE_ENV === 'development') {
-    win.webContents.openDevTools();
   }
-}
 
-// 특占쏙옙 창占쏙옙 占쏙옙占쏙옙占싹곤옙 占쌥댐옙 占쌉쇽옙
+
+
+// 특정 창을 안전하게 닫는 함수
 function closeWindow(window) {
   if (window && !window.isDestroyed()) {
     window.close();
@@ -80,11 +79,13 @@ function closeWindow(window) {
 }
 
 ipcMain.on('close-login-window', (event) => {
-  if (loginWindow && !loginWindow.isDestroyed()) {  // loginWindow占쏙옙 占쏙옙占쏙옙占싹곤옙 占식깍옙占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙荑∽옙占� 占쌥깍옙
+  if (loginWindow && !loginWindow.isDestroyed()) {  // loginWindow가 존재하고 파괴되지 않은 경우에만 닫기
     loginWindow.close();
-    loginWindow = null;  // 창占쏙옙 占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쌨몌옙 占쏙옙占쏙옙 占쏙옙占쏙옙
+    loginWindow = null;  // 창이 닫힌 후 참조를 제거해 메모리 누수 방지
   }
 });
+
+
 
 ipcMain.on('send-embedding-request', async (event, imageData) => {
   try {
@@ -213,23 +214,7 @@ ipcMain.on('login', async (event, { email, password }) => {
 });
 
 
-//ipcMain.on('login', async (event, { email, password }) => {
-  //try {
-    //const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    //const loggedInEmail = userCredential.user.email;
 
-    //console.log("占싸깍옙占쏙옙 占쏙옙占쏙옙:", loggedInEmail);
-    //event.sender.send('login-success', { email: loggedInEmail });
-
-    // 占싸깍옙占쏙옙 占쏙옙占쏙옙 占쏙옙 占싱몌옙占쏙옙占쏙옙 localStorage占쏙옙 占쏙옙占쏙옙
-    //BrowserWindow.getAllWindows().forEach(window => {
-      //window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${loggedInEmail}')`);
-    //});
-  //} catch (error) {
-    //console.error("占싸깍옙占쏙옙 占쏙옙占쏙옙:", error.message);
-    //event.sender.send('login-failed', error.message);
-  //}
-//});
 
 
 
@@ -510,7 +495,7 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
   
  });
 
-// 占싱몌옙占쏙옙 占쏙옙占쏙옙 占싱븝옙트
+
 ipcMain.on('set-user-email', (event, email) => {
   userEmail = email;
   console.log('User email set to:', userEmail);

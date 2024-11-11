@@ -26,12 +26,10 @@ async function fetchUserDoc(email) {
 
 async function startWebcam() {
   try {
-    // video 요소가 없을 때만 생성하여 중복 생성을 방지
     if (!video) {
+      // video 요소를 한 번만 생성하여 위치와 크기를 고정
       video = document.createElement('video');
       video.id = 'webcam-video';
-
-      // 고정된 위치와 크기 설정
       video.style.width = '200px';
       video.style.height = '150px';
       video.style.position = 'fixed';
@@ -39,20 +37,16 @@ async function startWebcam() {
       video.style.bottom = '10px';
       video.style.zIndex = '1000';
       video.style.objectFit = 'cover';
-      video.style.display = 'none'; // 처음에는 숨김 상태로 추가
+      video.style.display = 'none';
       document.body.appendChild(video);
     }
 
-    // 이미 시작된 스트림이 없을 경우에만 새로 생성하여 중복 스트림 생성 방지
-    if (!stream) {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-      await video.play();
-      console.log("웹캠이 정상적으로 시작되었습니다.");
-    }
-
-    // 비디오 요소 보이기
-    video.style.display = 'block';
+    // 새로운 스트림을 요청하고 video 요소에 할당
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    await video.play();
+    video.style.display = 'block'; // 비디오 요소 보이기
+    console.log("웹캠이 정상적으로 시작되었습니다.");
   } catch (error) {
     console.error('웹캠을 시작하는 중 오류 발생:', error);
   }
@@ -60,11 +54,14 @@ async function startWebcam() {
 
 
 function stopWebcam() {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop()); // 스트림 중지로 캠 불빛 끄기
+    stream = null;
+  }
   if (video) {
     video.style.display = 'none'; // 비디오 요소 숨기기
   }
 }
-
 
 function cosSimilarity(embedding1, embedding2) {
   // NaN 값을 0으로 대체
@@ -84,14 +81,46 @@ function cosSimilarity(embedding1, embedding2) {
   return dotProduct / (norm1 * norm2);
 }
 
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.className = "toast show";
+
+  // 3초 후에 자동으로 사라지도록 설정
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 3000);
+}
+
+function showSystemNotification(message) {
+  const notification = new Notification("얼굴 인증 알림", {
+    body: message,
+    icon: "./icon.png", // 아이콘을 추가할 수 있습니다.
+    silent: true, // 소리 없이 표시
+  });
+
+  // 알림 클릭 시의 동작 (선택 사항)
+  notification.onclick = () => {
+    console.log("알림이 클릭되었습니다.");
+  };
+}
+
+// 얼굴 인증 시작 전에 알림 표시
+function startFaceVerificationNotification() {
+  showSystemNotification("얼굴 인증이 곧 시작됩니다. 준비해 주세요!");
+}
+
+
+
 async function performFaceVerification() {
   if (isVerifying) {
     console.log('이미 얼굴 인증이 진행 중입니다.');
     return;
   }
-
+  startFaceVerificationNotification();{
   console.log('performFaceVerification() 호출 시작');
   isVerifying = true;
+  }
 
   try {
     userEmail = localStorage.getItem('userEmail');
@@ -102,14 +131,9 @@ async function performFaceVerification() {
       return;
     }
 
-    // video 요소와 stream을 startWebcam()에서 이미 생성하므로 여기서는 재사용만 함
-    if (video && stream) {
-      video.style.display = 'block'; // 비디오 요소 보이기
-    } else {
-      await startWebcam(); // 만약 비디오나 스트림이 없으면 startWebcam 호출로 초기화
-    }
+    // 얼굴 인증 시작 시 웹캠 켜기
+    await startWebcam();
 
-    // 비디오 프레임을 캡처하여 임베딩을 생성
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -120,7 +144,6 @@ async function performFaceVerification() {
     // 얼굴 임베딩 생성 요청 전송
     window.electronAPI.sendEmbeddingRequest(imageData);
 
-    // 리스너 중복 등록 방지
     if (!isListenerRegistered) {
       window.electronAPI.onEmbeddingResult(async (newEmbedding) => {
         console.log('onEmbeddingResult 내부의 임베딩 결과:', newEmbedding);
@@ -144,14 +167,14 @@ async function performFaceVerification() {
         console.log('코사인 유사도:', similarity);
 
         if (similarity > 0.75) {
-          alert('얼굴 인증 성공');
+          showToast('얼굴 인증 성공');
         } else {
           alert('얼굴 인증 실패. 자동 로그아웃을 수행합니다.');
           window.electronAPI.logOut();
           window.location.href = 'index.html';
         }
 
-        // 얼굴 인증이 끝난 후 비디오 요소 숨기기
+        // 얼굴 인증이 끝난 후 웹캠 종료
         stopWebcam();
         isVerifying = false;
       });
@@ -161,12 +184,9 @@ async function performFaceVerification() {
   } catch (error) {
     console.error('performFaceVerification() 중 오류 발생:', error);
     isVerifying = false;
+    stopWebcam();
   }
 }
-
-
-
-
 
 
     if (logOutButton) {
@@ -190,14 +210,12 @@ async function performFaceVerification() {
     function startPeriodicVerification() {
       async function verify() {
         await performFaceVerification();
-        setTimeout(verify, 5000); // 30초 간격으로 호출
+        setTimeout(verify, 10000); // 30초 간격으로 호출
       }
       verify();
     }
 
-
-
-    
+ 
 // 메인 함수
 async function main() {
   console.log("main() 함수 실행");
