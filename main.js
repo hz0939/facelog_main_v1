@@ -353,6 +353,33 @@ ipcMain.handle('get-user-sites', async (event, userEmail) => {
   }
 });
 
+ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
+  try {
+    console.log(`Firestore에서 삭제 요청 - 사용자 이메일: ${userEmail}, 한 번 인코딩된 문서 ID: ${docId}`);
+    const siteDocRef = doc(db, `users/${userEmail}/sites`, docId);
+    const docSnapshot = await getDoc(siteDocRef);
+
+    if (docSnapshot.exists()) {
+      await deleteDoc(siteDocRef);
+      console.log(`Firestore에서 사이트 데이터 삭제 성공: ${docId}`);
+      return true;
+    } else {
+      console.error(`삭제할 문서가 존재하지 않습니다: ${docId}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
+    throw error;
+  }
+});
+
+
+
+
+
+
+
+
 
 
 
@@ -362,6 +389,7 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
     const loginWindow = new BrowserWindow({
       width: 800,
       height: 600,
+      parent: null, // 부모 창 설정 제거
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -369,13 +397,15 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
       }
     });
 
+    // URL 파라미터를 디코딩해서 사용
     const decodedUrl = decodeURIComponent(url);
+    console.log("디코딩된 URL:", decodedUrl);
     loginWindow.loadURL(decodedUrl);
 
-    loginWindow.on('closed', () => {
-      console.log("loginWindow 닫힘");
-      loginWindow = null;
-    });
+    //loginWindow.on('closed', () => {
+      //console.log("loginWindow 닫힘");
+      //loginWindow = null;
+    //});
 
     loginWindow.webContents.on('did-finish-load', () => {
       console.log('페이지 로드 완료, 자동 로그인 시도 중...');
@@ -406,7 +436,13 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
     });
 
     loginWindow.on('closed', () => {
-      loginWindow.webContents.session.clearStorageData();
+      console.log("loginWindow 닫힘");
+      // 메인 페이지 새로고침 요청
+      const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
+      if (mainWindow) {
+        mainWindow.webContents.send('refresh-main-page');
+        console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
+      }
     });
   } catch (error) {
     console.error('자동 로그인 처리 중 오류 발생:', error);
@@ -456,7 +492,11 @@ ipcMain.on('navigate-to-index', () => {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  const allWindows = BrowserWindow.getAllWindows();
+
+  // 메인 창(`Main Page`)이 닫힌 경우에만 앱 종료
+  const mainWindow = allWindows.find(win => win.getTitle() === 'Main Page');
+  if (!mainWindow || allWindows.length === 0) {
     app.quit();
   }
 });
@@ -504,6 +544,16 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
   win.webContents.on('did-finish-load', () => {
     console.log("페이지 로드 완료 및 MutationObserver 설정");
   });
+  // 새 창이 닫힐 때 메인 페이지 새로고침 요청
+  win.on('closed', () => {
+    console.log("open-url-in-new-window 창 닫힘, 메인 페이지 새로고침 요청 전송");
+    const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
+    if (mainWindow) {
+      mainWindow.webContents.send('refresh-main-page');
+      console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
+    }
+  });
+  
   });
 
 // Firestore에 사이트 데이터 저장

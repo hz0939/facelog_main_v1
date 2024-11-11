@@ -86,7 +86,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('save-site-data', siteData);
   },
   getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
-  getUserEmail: () => ipcRenderer.invoke('get-user-email')
+  getUserEmail: () => ipcRenderer.invoke('get-user-email'),
+
+  // 사이트 데이터 삭제 메서드
+  deleteSiteData: (userEmail, docId) => ipcRenderer.invoke('delete-site-data', userEmail, docId),
 
 });
 
@@ -174,4 +177,7 @@ ipcRenderer.on('enable-observer', () => {
   }
 });
 
-
+ipcRenderer.on('refresh-main-page', () => {
+  console.log("preload.js에서 'refresh-main-page' 이벤트 수신");
+  window.location.reload(); // 메인 페이지를 직접 새로고침
+});
