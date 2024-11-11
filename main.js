@@ -544,11 +544,13 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
   win.webContents.on('did-finish-load', () => {
     console.log("페이지 로드 완료 및 MutationObserver 설정");
   });
+  // 새 창이 닫힐 때 메인 페이지 새로고침 요청
   win.on('closed', () => {
-    console.log("openUrlInNewWindow 창 닫힘, 메인 페이지 새로고침 요청 전송");
+    console.log("open-url-in-new-window 창 닫힘, 메인 페이지 새로고침 요청 전송");
     const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
     if (mainWindow) {
       mainWindow.webContents.send('refresh-main-page');
+      console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
     }
   });
   

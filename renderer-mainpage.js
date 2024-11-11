@@ -161,6 +161,7 @@ window.electronAPI.on('refresh-main-page-to-renderer', async () => {
   const userEmail = localStorage.getItem('userEmail');
   if (userEmail) {
     await loadUserSites(userEmail);
+    console.log("메인 페이지가 새로고침되었습니다.");
   }
 });
 

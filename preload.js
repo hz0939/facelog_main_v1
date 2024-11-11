@@ -179,5 +179,5 @@ ipcRenderer.on('enable-observer', () => {
 
 ipcRenderer.on('refresh-main-page', () => {
   console.log("preload.js에서 'refresh-main-page' 이벤트 수신");
-  ipcRenderer.send('refresh-main-page-to-renderer');
+  window.location.reload(); // 메인 페이지를 직접 새로고침
 });
