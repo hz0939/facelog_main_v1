@@ -1,94 +1,121 @@
-/* 전체 페이지에 적용될 기본 스타일 */
+/* ŔüĂź ĆäŔĚÁöżĄ ŔűżëľÉ ąâşť ˝şĹ¸ŔĎ */
 body {
-  font-family: Arial, sans-serif;  /* 기본 글꼴을 Arial로 설정 */
-  text-align: center;              /* 텍스트를 페이지 중앙 정렬 */
-  background-color: #f9f9f9;       /* 배경색을 밝은 회색으로 설정 */
+  font-family: Arial, sans-serif;  /* ąâşť ąŰ˛ĂŔť ArialˇÎ źłÁ¤ */
+  text-align: center;              /* ĹŘ˝şĆŽ¸Ś ĆäŔĚÁö ÁßžÓ Á¤ˇÄ */
+  background-color: #f9f9f9;       /* šč°ćťöŔť šŕŔş Č¸ťöŔ¸ˇÎ źłÁ¤ */
 }
 
-/* 헤더 부분의 스타일 */
+/* Çě´ő şÎşĐŔÇ ˝şĹ¸ŔĎ */
 header {
-  display: flex;                   /* 요소들을 가로로 정렬 */
-  align-items: center;             /* 수직 가운데 정렬 */
-  justify-content: center;         /* 수평 가운데 정렬 */
-  padding: 20px;                   /* 헤더에 20px의 패딩 추가 */
-  border-bottom: 1px solid #ddd;   /* 헤더 아래쪽에 얇은 회색 경계선 추가 */
+  display: flex;                   /* żäźŇľéŔť °ĄˇÎˇÎ Á¤ˇÄ */
+  align-items: center;             /* źöÁ÷ °ĄżîľĽ Á¤ˇÄ */
+  justify-content: center;         /* źöĆň °ĄżîľĽ Á¤ˇÄ */
+  padding: 20px;                   /* Çě´őżĄ 20pxŔÇ ĆĐľů Ăß°Ą */
+  border-bottom: 1px solid #ddd;   /* Çě´ő žĆˇĄÂĘżĄ žăŔş Č¸ťö °ć°čźą Ăß°Ą */
 }
 
-/* 로고 이미지의 스타일 */
+/* ˇÎ°í ŔĚšĚÁöŔÇ ˝şĹ¸ŔĎ */
 .logo {
-  width: 100px;                    /* 로고의 너비를 100px로 설정 */
-  height: auto;                    /* 높이는 비율에 맞게 자동 조정 */
-  margin-right: 10px;              /* 로고와 제목 사이에 10px의 간격 추가 */
+  width: 100px;                    /* ˇÎ°íŔÇ łĘşń¸Ś 100pxˇÎ źłÁ¤ */
+  height: auto;                    /* łôŔĚ´Â şńŔ˛żĄ ¸Â°Ô ŔÚľż ÁśÁ¤ */
+  margin-right: 10px;              /* ˇÎ°íżÍ ÁŚ¸ń ťçŔĚżĄ 10pxŔÇ °Ł°Ý Ăß°Ą */
 }
 
-/* 제목의 스타일 */
+/* ÁŚ¸ńŔÇ ˝şĹ¸ŔĎ */
 .title {
-  font-size: 2rem;                 /* 제목의 글꼴 크기를 2rem으로 설정 */
-  color: #333;                     /* 제목 색상을 진한 회색(#333)으로 설정 */
+  font-size: 2rem;                 /* ÁŚ¸ńŔÇ ąŰ˛Ă ĹŠąâ¸Ś 2remŔ¸ˇÎ źłÁ¤ */
+  color: #333;                     /* ÁŚ¸ń ťöťóŔť ÁřÇŃ Č¸ťö(#333)Ŕ¸ˇÎ źłÁ¤ */
 }
 
-/* 메인 콘텐츠의 스타일 */
+/* ¸ŢŔÎ ÄÜĹŮĂ÷ŔÇ ˝şĹ¸ŔĎ */
 main {
-  margin-top: 50px;                /* 메인 콘텐츠 위쪽에 50px의 여백 추가 */
+  margin-top: 50px;                /* ¸ŢŔÎ ÄÜĹŮĂ÷ Ŕ§ÂĘżĄ 50pxŔÇ żŠšé Ăß°Ą */
 }
 
-/* 버튼들의 기본 스타일 */
+/* šöĆ°ľéŔÇ ąâşť ˝şĹ¸ŔĎ */
 .buttons button {
-  margin: 20px;                    /* 버튼 사이에 10px의 간격 추가 */
-  padding: 10px 20px;              /* 버튼 내부에 10px 위/아래, 20px 좌/우 여백 추가 */
-  font-size: 1rem;                 /* 버튼 글꼴 크기를 1rem으로 설정 */
-  border: 1px solid #333;          /* 버튼 테두리를 진한 회색(#333)으로 설정 */
-  cursor: pointer;                 /* 버튼 위에 마우스 커서를 올리면 포인터로 변경 */
+  margin: 20px;                    /* šöĆ° ťçŔĚżĄ 10pxŔÇ °Ł°Ý Ăß°Ą */
+  padding: 10px 20px;              /* šöĆ° łťşÎżĄ 10px Ŕ§/žĆˇĄ, 20px ÁÂ/żě żŠšé Ăß°Ą */
+  font-size: 1rem;                 /* šöĆ° ąŰ˛Ă ĹŠąâ¸Ś 1remŔ¸ˇÎ źłÁ¤ */
+  border: 1px solid #333;          /* šöĆ° Ĺ×ľÎ¸Ž¸Ś ÁřÇŃ Č¸ťö(#333)Ŕ¸ˇÎ źłÁ¤ */
+  cursor: pointer;                 /* šöĆ° Ŕ§żĄ ¸śżě˝ş Äżź­¸Ś żĂ¸Ž¸é Ć÷ŔÎĹÍˇÎ şŻ°ć */
 }
 
 #logOutButton {
-  position: absolute;   /* 절대 위치를 사용 */
-  top: 20px;            /* 화면 상단에서 20px 떨어짐 */
-  right: 20px;          /* 화면 오른쪽에서 20px 떨어짐 */
-  padding: 10px 20px;   /* 버튼 내부 여백 */
-  background-color: blue; /* 로그아웃 버튼의 배경색 (빨간색 계열) */
-  color: #fff;          /* 텍스트 색상 흰색 */
-  border: none;         /* 버튼 테두리 제거 */
-  cursor: pointer;      /* 마우스 커서가 포인터로 변경 */
-  border-radius: 5px;   /* 버튼 모서리 둥글게 설정 */
-}
-
-#deleteAccountButton {
-  position: absolute;   /* 절대 위치를 사용 */
-  top: 20px;            /* 화면 상단에서 20px 떨어짐 */
-  right: 120px;          /* 화면 오른쪽에서 20px 떨어짐 */
-  padding: 10px 20px;   /* 버튼 내부 여백 */
-  background-color: #ff4d4d; /* 로그아웃 버튼의 배경색 (빨간색 계열) */
-  color: #fff;          /* 텍스트 색상 흰색 */
-  border: none;         /* 버튼 테두리 제거 */
-  cursor: pointer;      /* 마우스 커서가 포인터로 변경 */
-  border-radius: 5px;   /* 버튼 모서리 둥글게 설정 */
+  position: absolute;   /* Ŕý´ë Ŕ§ÄĄ¸Ś ťçżë */
+  top: 20px;            /* Č­¸é ťó´ÜżĄź­ 20px śłžîÁü */
+  right: 20px;          /* Č­¸é żŔ¸ĽÂĘżĄź­ 20px śłžîÁü */
+  padding: 10px 20px;   /* šöĆ° łťşÎ żŠšé */
+  background-color: #ff4d4d; /* ˇÎą×žĆżô šöĆ°ŔÇ šč°ćťö (ťĄ°Łťö °čż­) */
+  color: #fff;          /* ĹŘ˝şĆŽ ťöťó Čňťö */
+  border: none;         /* šöĆ° Ĺ×ľÎ¸Ž ÁŚ°Ĺ */
+  cursor: pointer;      /* ¸śżě˝ş Äżź­°Ą Ć÷ŔÎĹÍˇÎ şŻ°ć */
+  border-radius: 5px;   /* šöĆ° ¸đź­¸Ž ľŐąŰ°Ô źłÁ¤ */
 }
 
 #addButton{
-  position: fixed;         /* 버튼을 고정된 위치에 배치 */
-  bottom: 20px;            /* 화면 아래에서 20px 떨어짐 */
-  right: 20px;             /* 화면 오른쪽에서 20px 떨어짐 */
-  padding: 10px 20px;      /* 버튼 내부 여백 */
-  background-color: #4CAF50; /* 버튼 배경을 녹색으로 설정 */
-  color: white;            /* 텍스트 색상은 흰색 */
-  border: none;            /* 테두리 제거 */
-  border-radius: 50%;      /* 버튼을 둥글게 */
-  font-size: 16px;         /* 텍스트 크기 */
-  cursor: pointer;         /* 마우스 커서를 포인터로 변경 */
+  position: fixed;         /* šöĆ°Ŕť °íÁ¤ľČ Ŕ§ÄĄżĄ ščÄĄ */
+  bottom: 20px;            /* Č­¸é žĆˇĄżĄź­ 20px śłžîÁü */
+  right: 20px;             /* Č­¸é żŔ¸ĽÂĘżĄź­ 20px śłžîÁü */
+  padding: 10px 20px;      /* šöĆ° łťşÎ żŠšé */
+  background-color: #4CAF50; /* šöĆ° šč°ćŔť łěťöŔ¸ˇÎ źłÁ¤ */
+  color: white;            /* ĹŘ˝şĆŽ ťöťóŔş Čňťö */
+  border: none;            /* Ĺ×ľÎ¸Ž ÁŚ°Ĺ */
+  border-radius: 50%;      /* šöĆ°Ŕť ľŐąŰ°Ô */
+  font-size: 16px;         /* ĹŘ˝şĆŽ ĹŠąâ */
+  cursor: pointer;         /* ¸śżě˝ş Äżź­¸Ś Ć÷ŔÎĹÍˇÎ şŻ°ć */
+}
+
+
+/* ˇÎą×ŔÎ šöĆ°ŔÇ ˝şĹ¸ŔĎ (´Ů¸Ľ šöĆ°°ú ťöťó Â÷ş°Č­) */
+#loginButton {
+  background-color: #333;          /* šöĆ° šč°ćŔť ÁřÇŃ Č¸ťö(#333)Ŕ¸ˇÎ źłÁ¤ */
+  color: #fff;                     /* šöĆ° ĹŘ˝şĆŽ ťöťóŔť ČňťöŔ¸ˇÎ źłÁ¤ */
+}
+
+#webcam-video {
+  width: 200px;
+  height: 150px;
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1000;
+  object-fit: cover;
+}
+
+.toast {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1000;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+  opacity: 0;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+
+.toast.show {
+  visibility: visible;
+  opacity: 1;
 }
 
 
 
-
-/* 사용자 정보 섹션의 스타일 */
+/* ťçżëŔÚ Á¤ş¸ ź˝źÇŔÇ ˝şĹ¸ŔĎ */
 .user-info {
-  font-size: 1.2rem;               /* 사용자 정보의 글꼴 크기를 1.2rem으로 설정 */
-  color: #333;                     /* 텍스트 색상을 진한 회색(#333)으로 설정 */
-  margin-top: 20px;                /* 사용자 정보 위쪽에 20px의 여백 추가 */
+  font-size: 1.2rem;               /* ťçżëŔÚ Á¤ş¸ŔÇ ąŰ˛Ă ĹŠąâ¸Ś 1.2remŔ¸ˇÎ źłÁ¤ */
+  color: #333;                     /* ĹŘ˝şĆŽ ťöťóŔť ÁřÇŃ Č¸ťö(#333)Ŕ¸ˇÎ źłÁ¤ */
+  margin-top: 20px;                /* ťçżëŔÚ Á¤ş¸ Ŕ§ÂĘżĄ 20pxŔÇ żŠšé Ăß°Ą */
 }
 
-/* 사이트 아이콘 및 제목 스타일 수정 */
+/* ěŹě´í¸ ěě´ě˝ ë° ě ëŞŠ ě¤íěź ěě  */
 .site-item {
   display: flex;
   align-items: center;
@@ -99,10 +126,10 @@ main {
   width: 50px;
   height: 50px;
   margin-right: 10px;
-  background-color: #f0f0f0; /* 회색 배경 */
-  border-radius: 50%; /* 원형 모양 */
+  background-color: #f0f0f0; /* íě ë°°ę˛˝ */
+  border-radius: 50%; /* ěí ëŞ¨ě */
   border-color: #f0f0f0;
-  margin: 0 auto; /* 중앙 정렬 */
+  margin: 0 auto; /* ě¤ě ě ë Ź */
 }
 
 .site-entry {
@@ -110,9 +137,9 @@ main {
   text-align: center;
   width: 160px;
   margin: 0 15px;
-  flex-direction: column; /* 세로 방향으로 정렬 */
-  align-items: center;    /* 중앙 정렬 */
-  justify-content: center; /* 수직 중앙 정렬 */
+  flex-direction: column; /* ě¸ëĄ ë°ŠíĽěźëĄ ě ë Ź */
+  align-items: center;    /* ě¤ě ě ë Ź */
+  justify-content: center; /* ěě§ ě¤ě ě ë Ź */
   position: relative;
 }
 
@@ -128,14 +155,14 @@ main {
   white-space: nowrap;
   margin-top: 10px;
   color: #333;
-  text-align: center; /* 타이틀을 중앙 정렬 */
+  text-align: center; /* íě´íě ě¤ě ě ë Ź */
 }
 
 .site-entry:hover {
   background-color: #f0f0f0;
 }
 
-/* more-options 버튼 스타일 */
+/* more-options ë˛íź ě¤íěź */
 .more-options {
   display: none;
   position: absolute;
@@ -147,12 +174,12 @@ main {
   cursor: pointer;
 }
 
-/* 아이콘에 마우스 올렸을 때 more-options 버튼 표시 */
+/* ěě´ě˝ě ë§ě°ě¤ ěŹë ¸ě ë more-options ë˛íź íě */
 .site-entry:hover .more-options {
   display: block;
 }
 
-/* context-menu 스타일 */
+/* context-menu ě¤íěź */
 .context-menu {
   display: none;
   position: absolute;
@@ -178,7 +205,7 @@ main {
   background-color: #f0f0f0;
 }
 
-/* 구글 검색창 스타일의 URL 입력창 */
+/* ęľŹę¸ ę˛ěě°˝ ě¤íěźě URL ěë Ľě°˝ */
 #url-input {
   width: 300px;
   height: 40px;
@@ -194,13 +221,13 @@ main {
   transition: all 0.2s ease-in-out;
 }
 
-/* 입력 시 포커스 스타일 */
+/* ěë Ľ ě íŹěť¤ě¤ ě¤íěź */
 #url-input:focus {
   border-color: #4285f4;
   box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
 }
 
-/* Go 버튼 스타일 */
+/* Go ë˛íź ě¤íěź */
 #go-button {
   height: 40px;
   padding: 0 15px;
@@ -222,14 +249,14 @@ main {
   background-color: #2c5bbf;
 }
 
-/* 로그인/회원가입 입력창 스타일 (구글 검색창 스타일 적용) */
-/* 회원가입 입력 필드 스타일 */
+/* ëĄęˇ¸ě¸/íěę°ě ěë Ľě°˝ ě¤íěź (ęľŹę¸ ę˛ěě°˝ ě¤íěź ě ěŠ) */
+/* íěę°ě ěë Ľ íë ě¤íěź */
 .signup-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 15px; /* 필드 간 간격 */
+  gap: 15px; /* íë ę° ę°ę˛Š */
   margin-top: 20px;
 }
 
@@ -249,14 +276,14 @@ main {
   transition: all 0.2s ease-in-out;
 }
 
-/* 입력창 포커스 시 스타일 */
+/* ěë Ľě°˝ íŹěť¤ě¤ ě ě¤íěź */
 #email:focus,
 #password:focus {
   border-color: #4285f4;
   box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
 }
 
-/* 로그인/회원가입 버튼 스타일 */
+/* ëĄęˇ¸ě¸/íěę°ě ë˛íź ě¤íěź */
 #submitLogin,
 #submitSignUp {
   width: 120px;
@@ -281,7 +308,7 @@ main {
   background-color: #2c5bbf;
 }
 
-/* 메인 화면 버튼 스타일 업데이트 */
+/* ëŠě¸ íëŠ´ ë˛íź ě¤íěź ěë°ě´í¸ */
 #signUpButton,
 #loginButton {
   width: 150px;
@@ -297,7 +324,7 @@ main {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 회원가입 버튼 회색 스타일 */
+/* íěę°ě ë˛íź íě ě¤íěź */
 #signUpButton {
   background-color: #f0f0f0;
   color: #333;
@@ -312,7 +339,7 @@ main {
   background-color: #d0d0d0;
 }
 
-/* 로그인 버튼 파란색 스타일 */
+/* ëĄęˇ¸ě¸ ë˛íź íëě ě¤íěź */
 #loginButton {
   background-color: #4285f4;
   color: #fff;
@@ -326,7 +353,7 @@ main {
   background-color: #2c5bbf;
 }
 
-/* 사이트 등록 입력 필드 스타일 (블루&라운드 스타일 적용) */
+/* ěŹě´í¸ ëąëĄ ěë Ľ íë ě¤íěź (ë¸ëŁ¨&ëźě´ë ě¤íěź ě ěŠ) */
 #site-name,
 #site-url,
 #site-id,
@@ -345,7 +372,7 @@ main {
     transition: all 0.2s ease-in-out;
 }
 
-/* 입력 필드 포커스 스타일 */
+/* ěë Ľ íë íŹěť¤ě¤ ě¤íěź */
 #site-name:focus,
 #site-url:focus,
 #site-id:focus,
@@ -354,7 +381,7 @@ main {
     box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
 }
 
-/* 제출 버튼 스타일 */
+/* ě ěś ë˛íź ě¤íěź */
 #submit-button {
     width: 150px;
     height: 40px;
@@ -376,7 +403,7 @@ main {
     background-color: #2c5bbf;
 }
 
-/* 뒤로 가기 버튼 스타일 */
+/* ë¤ëĄ ę°ę¸° ë˛íź ě¤íěź */
 .back-button {
     width: 150px;
     height: 40px;

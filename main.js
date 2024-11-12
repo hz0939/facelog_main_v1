@@ -3,8 +3,8 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection,getDoc,addDoc, setDoc, doc, getDocs, deleteDoc} = require('firebase/firestore');
-const { getAuth, onAuthStateChanged, setPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,browserSessionPersistence,signOut, } = require('firebase/auth'); 
+const { getFirestore, collection, getDoc, addDoc, setDoc, doc, getDocs, deleteDoc } = require('firebase/firestore');
+const { getAuth, onAuthStateChanged, setPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, browserSessionPersistence, signOut, } = require('firebase/auth');
 const fs = require('fs');
 const { execFile } = require('child_process');
 const admin = require('firebase-admin');
@@ -31,7 +31,7 @@ const passwordSelectors = [
   'input[name="userPass"]',
 ];
 
-// Firebase 초기화
+
 const firebaseConfig = {
   apiKey: "AIzaSyCkiXse10TpCRQZ9thBSAO07U1mPh49_H8",
   authDomain: "looknlock-d163f.firebaseapp.com",
@@ -47,31 +47,30 @@ const db = getFirestore(firebaseApp);
 
 
 let loggedInUserEmail = null; // 로그인된 사용자의 이메일
- setPersistence(auth, browserSessionPersistence)
+setPersistence(auth, browserSessionPersistence)
   .then(() => console.log("세션 지속성을 SESSION으로 설정했습니다."))
   .catch(error => console.error("세션 지속성 설정 중 오류:", error.message));
 
 let userEmail = null;
-  // Firebase 인증 상태 변경 시 사용자 이메일 업데이트
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      userEmail = user.email;
-      console.log('로그인 성공, 이메일:', userEmail);
-      BrowserWindow.getAllWindows().forEach(window => {
-        window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${userEmail}')`);
-      });
-    } else {
-      userEmail = null;
-      console.log('로그아웃됨');
-    }
-    //loggedInUserEmail = user ? user.email : null;
-    //BrowserWindow.getAllWindows().forEach(window => {
-      //window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
-    //});
-    //console.log(`로그인 상태 변경: ${loggedInUserEmail ? '로그인됨' : '로그아웃됨'}`);
-  });
+// Firebase 인증 상태 변경 시 사용자 이메일 업데이트
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    userEmail = user.email;
+    console.log('로그인 성공, 이메일:', userEmail);
+    BrowserWindow.getAllWindows().forEach(window => {
+      window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${userEmail}')`);
+    });
+  } else {
+    userEmail = null;
+    console.log('로그아웃됨');
+  }
+  //loggedInUserEmail = user ? user.email : null;
+  //BrowserWindow.getAllWindows().forEach(window => {
+  //window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
+  //});
+  //console.log(`로그인 상태 변경: ${loggedInUserEmail ? '로그인됨' : '로그아웃됨'}`);
+});
 
-  
 
 function createWindow() {
   win = new BrowserWindow({
@@ -92,6 +91,8 @@ function createWindow() {
   }
 }
 
+
+
 // 특정 창을 안전하게 닫는 함수
 function closeWindow(window) {
   if (window && !window.isDestroyed()) {
@@ -107,27 +108,33 @@ ipcMain.on('close-login-window', (event) => {
 });
 
 
-  
-// FaceNet 임베딩 처리
+
+ipcMain.on('send-embedding-request', async (event, imageData) => {
+  try {
+    const embeddingResult = await generateFaceEmbedding(imageData);
+    event.sender.send('face-embedding-result', embeddingResult);
+  } catch (error) {
+    console.error('임베딩 요청 오류:', error);
+  }
+});
+
+
+
 ipcMain.on('process-face-embedding', (event, { imageData }) => {
   const tempImagePath = path.join(__dirname, 'temp_image_data.txt');
-  const pythonScriptPath = path.join(__dirname, 'facenet_embedding.py'); // Python 스크립트 경로 설정
+  const pythonScriptPath = path.join(__dirname, 'facenet_embedding.py');
 
-  // 'data:image/png;base64,' 접두어가 없는 경우 추가
   if (!imageData.startsWith('data:image/png;base64,')) {
     imageData = `data:image/png;base64,${imageData}`;
   }
 
-  // Base64 데이터를 임시 파일에 저장
   fs.writeFile(tempImagePath, imageData, (err) => {
     if (err) {
-      console.error('이미지 데이터 파일 저장 오류:', err);
+      console.error('임시 이미지 파일 저장 오류:', err);
       return;
     }
 
-    // Python 스크립트를 실행하고 임시 파일 경로를 전달
-    execFile('python3', [pythonScriptPath, tempImagePath], (error, stdout, stderr) => {
-      // 실행 후 임시 파일 삭제
+    execFile('python', [pythonScriptPath, tempImagePath], (error, stdout, stderr) => {
       fs.unlink(tempImagePath, (unlinkErr) => {
         if (unlinkErr) {
           console.error('임시 파일 삭제 오류:', unlinkErr);
@@ -135,16 +142,12 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
       });
 
       if (error) {
-        console.error(`FaceNet 처리 중 오류 발생: ${error}`);
-        console.error(stderr); // 오류 메시지 출력
+        console.error(`FaceNet 처리 오류: ${error}`);
+        console.error(stderr);
         return;
       }
 
-      console.log(`FaceNet 임베딩 결과: ${stdout}`);
-      event.sender.send('face-embedding-result', stdout);
-
-      // 회원 탈퇴용
-      // 임베딩 결과를 배열로 변환
+      // stdout 결과 파싱 후, 한 번만 전송
       const embeddingArray = stdout
         .trim()
         .replace(/tensor\(|\)|\s+/g, '')
@@ -154,6 +157,7 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
     });
   });
 });
+
 
 // 회원가입 처리
 ipcMain.on('sign-up', async (event, { email, password }) => {
@@ -189,24 +193,27 @@ ipcMain.handle('save-user-embedding', async (event, { email, faceEmbedding }) =>
   }
 });
 
-// 로그인 관련
-ipcMain.handle('get-user-doc', async (event, email) => {
-  try {
-    const userDocRef = doc(db, 'users', email);  // 단일 문서 참조 생성
-    const userDocSnap = await getDoc(userDocRef);  // getDoc으로 단일 문서 가져오기
 
-    if (userDocSnap.exists()) {
-      console.log('user email found:', email);
-      return userDocSnap.data();
-    } else {
-      console.error('해당 이메일에 대한 사용자 데이터가 없습니다:', email);
+// main.js에서 중복 등록 방지
+if (!ipcMain.listeners('get-user-doc').length) {
+  ipcMain.handle('get-user-doc', async (event, email) => {
+    try {
+      console.log('user email found:', email); // 중복 호출 확인 로그
+      const userDocRef = doc(db, 'users', email);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        return userDocSnap.data();
+      } else {
+        console.error('User document not found:', email);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching user document:', error);
       return null;
     }
-  } catch (error) {
-    console.error('사용자 데이터를 가져오는 중 오류 발생:', error);
-    return null;
-  }
-});
+  });
+}
 
 
 // 로그인 성공 시 이메일 업데이트
@@ -229,23 +236,6 @@ ipcMain.on('login', async (event, { email, password }) => {
 });
 
 
-//ipcMain.on('login', async (event, { email, password }) => {
-  //try {
-    //const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    //const loggedInEmail = userCredential.user.email;
-
-    //console.log("로그인 성공:", loggedInEmail);
-    //event.sender.send('login-success', { email: loggedInEmail });
-
-    // 로그인 성공 시 이메일을 localStorage에 저장
-    //BrowserWindow.getAllWindows().forEach(window => {
-      //window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${loggedInEmail}')`);
-    //});
-  //} catch (error) {
-    //console.error("로그인 실패:", error.message);
-    //event.sender.send('login-failed', error.message);
-  //}
-//});
 
 
 
@@ -268,6 +258,8 @@ ipcMain.on('navigate-to-delete-auth', () => {
   win.loadFile('delete_auth.html');
 });
 
+
+
 // 회원 탈퇴 메서드 정의
 ipcMain.handle('delete-user-doc', async (event, userEmail) => {
   try {
@@ -281,6 +273,8 @@ ipcMain.handle('delete-user-doc', async (event, userEmail) => {
   }
 });
 
+
+
 // Firebase Authentication에서 사용자 삭제 함수
 async function deleteAuthUser(userEmail) {
   try {
@@ -292,6 +286,8 @@ async function deleteAuthUser(userEmail) {
   }
 }
 
+
+
 // 'delete-auth-user' 이벤트 핸들러 수정
 ipcMain.handle('delete-auth-user', async (event, userEmail) => {
   try {
@@ -302,6 +298,7 @@ ipcMain.handle('delete-auth-user', async (event, userEmail) => {
     return { success: false, error: error.message };
   }
 });
+
 
 
 
@@ -332,6 +329,9 @@ ipcMain.handle('write-data', async (event, { collectionName, data }) => {
     console.error('Firestore 문서 저장 중 오류:', error);
     throw error;
   }
+
+
+
 });
 
 ipcMain.handle('get-user-sites', async (event, userEmail) => {
@@ -383,6 +383,29 @@ ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
 
 
 
+ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
+  try {
+    console.log(`Firestore에서 삭제 요청 - 사용자 이메일: ${userEmail}, 한 번 인코딩된 문서 ID: ${docId}`);
+    const siteDocRef = doc(db, `users/${userEmail}/sites`, docId);
+    const docSnapshot = await getDoc(siteDocRef);
+
+    if (docSnapshot.exists()) {
+      await deleteDoc(siteDocRef);
+      console.log(`Firestore에서 사이트 데이터 삭제 성공: ${docId}`);
+      return true;
+    } else {
+      console.error(`삭제할 문서가 존재하지 않습니다: ${docId}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
+    throw error;
+  }
+});
+
+
+
+
 
 ipcMain.handle('auto-login', async (event, { url, id, password }) => {
   try {
@@ -397,15 +420,11 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
       }
     });
 
-    // URL 파라미터를 디코딩해서 사용
+
     const decodedUrl = decodeURIComponent(url);
     console.log("디코딩된 URL:", decodedUrl);
     loginWindow.loadURL(decodedUrl);
 
-    //loginWindow.on('closed', () => {
-      //console.log("loginWindow 닫힘");
-      //loginWindow = null;
-    //});
 
     loginWindow.webContents.on('did-finish-load', () => {
       console.log('페이지 로드 완료, 자동 로그인 시도 중...');
@@ -435,6 +454,7 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
       }, 500); // 폼 입력 완료 후 0.5초 지연
     });
 
+
     loginWindow.on('closed', () => {
       console.log("loginWindow 닫힘");
       // 메인 페이지 새로고침 요청
@@ -450,10 +470,9 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
 });
 
 
-
 // main.js
 ipcMain.on('navigate-to-write-page', (event) => {
-  console.log("Navigating to write page"); // 확인 로그 추가
+  console.log("Navigating to write page"); 
   const win = BrowserWindow.getAllWindows()[0];
   win.loadFile('writepage.html');
 });
@@ -488,13 +507,15 @@ ipcMain.on('navigate-to-index', () => {
 });
 
 
-// Electron 애플리케이션 실행
+
+
+// Electron 
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   const allWindows = BrowserWindow.getAllWindows();
 
-  // 메인 창(`Main Page`)이 닫힌 경우에만 앱 종료
+
   const mainWindow = allWindows.find(win => win.getTitle() === 'Main Page');
   if (!mainWindow || allWindows.length === 0) {
     app.quit();
@@ -510,14 +531,13 @@ app.on('activate', () => {
 
 auth.setPersistence(browserSessionPersistence)
   .then(() => {
-    console.log("세션 지속성을 설정했습니다.");
+    console.log("세션 지속성이 설정되었습니다.");
   })
   .catch((error) => {
     console.error("세션 지속성 설정 중 오류:", error.message);
   });
 
-
-// Firebase 인증 세션을 브라우저 탭이 닫힐 때 종료되도록 설정
+  // Firebase 인증 세션을 브라우저 탭이 닫힐 때 종료되도록 설정
 auth.setPersistence(browserSessionPersistence)
 .then(() => {
   console.log("세션 지속성을 SESSION으로 설정");
@@ -527,7 +547,7 @@ auth.setPersistence(browserSessionPersistence)
 });
 
 
-// url 입력 후 새로운 창 열기
+
 ipcMain.on('open-url-in-new-window', (_event, url) => {
   const win = new BrowserWindow({
     width: 800,
@@ -539,60 +559,65 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
     }
   });
 
-  win.loadURL(url.startsWith('http') ? url : `https://${url}`);
+        // 템플릿 리터럴 대신 문자열 연결 방식 사용
+        win.loadURL(url.startsWith('http') ? url : 'https://' + url);
 
-  win.webContents.on('did-finish-load', () => {
-    console.log("페이지 로드 완료 및 MutationObserver 설정");
-  });
-  // 새 창이 닫힐 때 메인 페이지 새로고침 요청
-  win.on('closed', () => {
-    console.log("open-url-in-new-window 창 닫힘, 메인 페이지 새로고침 요청 전송");
-    const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
-    if (mainWindow) {
-      mainWindow.webContents.send('refresh-main-page');
-      console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
-    }
-  });
-  
-  });
 
-// Firestore에 사이트 데이터 저장
-ipcMain.handle('save-site-data', async (event, siteData) => {
-  const { id, password, url, email, title, icon } = siteData;
-  if (email) {
-    try {
-      const encodedUrl = encodeURIComponent(url);
-      const collectionPath = `users/${email}/sites`;
-      await setDoc(doc(db, collectionPath, encodedUrl), {
-        id,
-        password,
-        url,
-        title: title || 'Untitled',
-        icon: icon || '/icon.png'
+        win.webContents.on('did-finish-load', () => {
+          console.log("페이지 로드 완료 및 MutationObserver 설정");
+        });
+
+
+
+      // 새 창이 닫힐 때 메인 페이지 새로고침 요청
+      win.on('closed', () => {
+        console.log("open-url-in-new-window 창 닫힘, 메인 페이지 새로고침 요청 전송");
+        const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
+        if (mainWindow) {
+          mainWindow.webContents.send('refresh-main-page');
+          console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
+        }
       });
-      console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
-    } catch (error) {
-      console.error('Firestore에 사이트 데이터 저장 실패:', error);
-    }
-  } else {
-    console.log('사용자가 로그인되어 있지 않습니다.');
-  }
-});
 
-// 이메일 설정 이벤트
-ipcMain.on('set-user-email', (event, email) => {
-  userEmail = email;
-  console.log('User email set to:', userEmail);
-});
-
-ipcMain.handle('get-user-email', async (event) => {
-  const email = await new Promise((resolve) => {
-    BrowserWindow.getAllWindows().forEach(window => {
-      window.webContents.executeJavaScript(`localStorage.getItem('userEmail')`)
-        .then((result) => resolve(result))
-        .catch(() => resolve(null));
     });
-  });
-  console.log("get-user-email 핸들러에서 가져온 이메일:", email);
-  return email;
-});
+    ipcMain.handle('save-site-data', async (event, siteData) => {
+      const { id, password, url, email, title, icon } = siteData;
+      if (email) {
+        try {
+          const encodedUrl = encodeURIComponent(url);
+          const collectionPath = `users/${email}/sites`;
+          await setDoc(doc(db, collectionPath, encodedUrl), {
+            id,
+            password,
+            url,
+            title: title || 'Untitled',
+            icon: icon || '/icon.png'
+          });
+          console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
+        } catch (error) {
+          console.error('Firestore에 사이트 데이터 저장 실패:', error);
+        }
+      } else {
+        console.log('사용자가 로그인되어 있지 않습니다.');
+      }
+    });
+
+
+
+    ipcMain.on('set-user-email', (event, email) => {
+      userEmail = email;
+      console.log('User email set to:', userEmail);
+    });
+
+    ipcMain.handle('get-user-email', async (event) => {
+      const email = await new Promise((resolve) => {
+        BrowserWindow.getAllWindows().forEach(window => {
+          window.webContents.executeJavaScript(`localStorage.getItem('userEmail')`)
+            .then((result) => resolve(result))
+            .catch(() => resolve(null));
+        });
+      });
+      console.log("get-user-email 핸들러에서 가져온 이메일:", email);
+      return email;
+    });
+  

@@ -1,29 +1,66 @@
+
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
 
 const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
 const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
 
+
 contextBridge.exposeInMainWorld('electronAPI', {
 
-  startWebcam: () => {
-    console.log("preload에서 startWebcam 호출됨");
-    return navigator.mediaDevices.getUserMedia({ video: true });
+ // onEmbeddingResult 수정
+onEmbeddingResult: (callback) => {
+  // 기존 리스너 제거
+  ipcRenderer.off('face-embedding-result', callback);
+
+  // 새로운 리스너 등록
+  ipcRenderer.on('face-embedding-result', (event, data) => {
+      console.log("Embedding 결과 수신:", data);
+      callback(data);
+  });
+
+},
+
+removeAllListeners: (channel) => {
+  console.log(`모든 리스너 제거: ${channel}`);
+  ipcRenderer.removeAllListeners(channel);
+},
+
+
+
+  startWebcam: async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log("preload에서 MediaStream 반환됨:", stream);
+      // streamId만 반환
+      return { streamId: stream.id };
+    } catch (error) {
+      console.error("웹캠 스트림 요청 중 오류:", error);
+      throw error;
+    }
   },
+
   // 사용자 인증 정보 가져오기
   getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
   onAuthStateChanged: (callback) => ipcRenderer.on('auth-state-changed', (event, data) => callback(data)),
   login: (credentials) => ipcRenderer.send('login', credentials),
   logOut: () => ipcRenderer.send('logout'),
 
+ 
+  
+
   // Firestore에서 사용자 문서 가져오기
-  getUserDoc: (email) => ipcRenderer.invoke('get-user-doc', email),
+  getUserDoc: (userEmail) => {
+    // 중복 리스너 제거
+    ipcRenderer.removeAllListeners('get-user-doc');
+    return ipcRenderer.invoke('get-user-doc', userEmail);
+  },
+  
 
   // 사용자 임베딩 데이터 Firestore에 저장
   saveUserEmbedding: (data) => ipcRenderer.invoke('save-user-embedding', data),
   sendEmbeddingRequest: (imageData) => ipcRenderer.send('process-face-embedding', { imageData }),
-  onEmbeddingResult: (callback) => ipcRenderer.on('face-embedding-result', (event, data) => callback(data)),
-
+  offEmbeddingResult: () => ipcRenderer.removeAllListeners('face-embedding-result'),
   sendSignUpRequest: (data) => ipcRenderer.send('sign-up', data),
   onSignUpSuccess: (callback) => ipcRenderer.on('sign-up-success', callback),
   onSignUpFailed: (callback) => ipcRenderer.on('sign-up-failed', (event, message) => callback(message)),
@@ -78,6 +115,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openUrlInNewWindow: (url) => ipcRenderer.send('open-url-in-new-window', url),
   saveSiteData: (data) => ipcRenderer.send('save-site-data', data),
 
+
+
   // 이메일 정보를 로컬 스토리지에서 가져오는 메서드
   
   // 사이트 데이터를 저장하는 메서드
@@ -110,8 +149,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ID와 비밀번호 필드 탐색 셀렉터 설정
-  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
-  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
+  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]','input[type="text"]'];
+  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]','input[type="password"]'];
   let saveTimeout;
 
   function attemptSaveData(idValue, passwordValue) {
