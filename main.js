@@ -376,37 +376,6 @@ ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
 
 
 
-
-
-
-
-
-
-
-ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
-  try {
-    console.log(`Firestore에서 삭제 요청 - 사용자 이메일: ${userEmail}, 한 번 인코딩된 문서 ID: ${docId}`);
-    const siteDocRef = doc(db, `users/${userEmail}/sites`, docId);
-    const docSnapshot = await getDoc(siteDocRef);
-
-    if (docSnapshot.exists()) {
-      await deleteDoc(siteDocRef);
-      console.log(`Firestore에서 사이트 데이터 삭제 성공: ${docId}`);
-      return true;
-    } else {
-      console.error(`삭제할 문서가 존재하지 않습니다: ${docId}`);
-      return false;
-    }
-  } catch (error) {
-    console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
-    throw error;
-  }
-});
-
-
-
-
-
 ipcMain.handle('auto-login', async (event, { url, id, password }) => {
   try {
     const loginWindow = new BrowserWindow({
