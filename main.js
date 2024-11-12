@@ -353,6 +353,33 @@ ipcMain.handle('get-user-sites', async (event, userEmail) => {
   }
 });
 
+ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
+  try {
+    console.log(`Firestore에서 삭제 요청 - 사용자 이메일: ${userEmail}, 한 번 인코딩된 문서 ID: ${docId}`);
+    const siteDocRef = doc(db, `users/${userEmail}/sites`, docId);
+    const docSnapshot = await getDoc(siteDocRef);
+
+    if (docSnapshot.exists()) {
+      await deleteDoc(siteDocRef);
+      console.log(`Firestore에서 사이트 데이터 삭제 성공: ${docId}`);
+      return true;
+    } else {
+      console.error(`삭제할 문서가 존재하지 않습니다: ${docId}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
+    throw error;
+  }
+});
+
+
+
+
+
+
+
+
 
 
 
@@ -393,9 +420,11 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
       }
     });
 
+
     const decodedUrl = decodeURIComponent(url);
     console.log("디코딩된 URL:", decodedUrl);
     loginWindow.loadURL(decodedUrl);
+
 
     loginWindow.webContents.on('did-finish-load', () => {
       console.log('페이지 로드 완료, 자동 로그인 시도 중...');
@@ -424,8 +453,6 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
         `).catch(error => console.error('자동 로그인 스크립트 실행 중 오류 발생:', error));
       }, 500); // 폼 입력 완료 후 0.5초 지연
     });
-
-
 
 
     loginWindow.on('closed', () => {
@@ -488,7 +515,7 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {
   const allWindows = BrowserWindow.getAllWindows();
 
- 
+
   const mainWindow = allWindows.find(win => win.getTitle() === 'Main Page');
   if (!mainWindow || allWindows.length === 0) {
     app.quit();
@@ -535,6 +562,7 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
         // 템플릿 리터럴 대신 문자열 연결 방식 사용
         win.loadURL(url.startsWith('http') ? url : 'https://' + url);
 
+
         win.webContents.on('did-finish-load', () => {
           console.log("페이지 로드 완료 및 MutationObserver 설정");
         });
@@ -573,6 +601,8 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
         console.log('사용자가 로그인되어 있지 않습니다.');
       }
     });
+
+
 
     ipcMain.on('set-user-email', (event, email) => {
       userEmail = email;
