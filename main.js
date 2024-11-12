@@ -21,6 +21,17 @@ const idSelectors = [
   'input[name="userId"]',
 ];
 
+const passwordSelectors = [
+  'input[name="password"]',
+  'input[name="pass"]',
+  'input[name="pw"]',
+  'input[name="usr_pw"]',
+  'input[id="password"]',
+  'input[id="userpw"]',
+  'input[name="userPass"]',
+];
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyCkiXse10TpCRQZ9thBSAO07U1mPh49_H8",
   authDomain: "looknlock-d163f.firebaseapp.com",
@@ -146,6 +157,7 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
     });
   });
 });
+
 
 // 회원가입 처리
 ipcMain.on('sign-up', async (event, { email, password }) => {
@@ -468,6 +480,8 @@ ipcMain.on('navigate-to-index', () => {
 });
 
 
+
+
 // Electron 
 app.whenReady().then(createWindow);
 
@@ -538,26 +552,27 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
       });
 
     });
-
-    // Firestore에 정보 저장
-    ipcMain.on('save-site-data', async (event, siteData) => {
-      if (userEmail) {
+    ipcMain.handle('save-site-data', async (event, siteData) => {
+      const { id, password, url, email, title, icon } = siteData;
+      if (email) {
         try {
-          const collectionPath = `users/${userEmail}/sites`;
-          await setDoc(doc(db, collectionPath, siteData.url), {
-            id: siteData.id,
-            password: siteData.password,
-            url: siteData.url
+          const encodedUrl = encodeURIComponent(url);
+          const collectionPath = `users/${email}/sites`;
+          await setDoc(doc(db, collectionPath, encodedUrl), {
+            id,
+            password,
+            url,
+            title: title || 'Untitled',
+            icon: icon || '/icon.png'
           });
-          console.log('Firestore에 정보 저장:', siteData);
+          console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
         } catch (error) {
-          console.error('Firestore에 정보 저장 실패:', error);
+          console.error('Firestore에 사이트 데이터 저장 실패:', error);
         }
       } else {
-        console.log('사용자가 로그인되어 있지 않습니다');
+        console.log('사용자가 로그인되어 있지 않습니다.');
       }
     });
-
 
     ipcMain.on('set-user-email', (event, email) => {
       userEmail = email;
@@ -572,7 +587,7 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
             .catch(() => resolve(null));
         });
       });
-      console.log("get-user-email 占쌘들러占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占싱몌옙占쏙옙:", email);
+      console.log("get-user-email 핸들러에서 가져온 이메일:", email);
       return email;
     });
   
