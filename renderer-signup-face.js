@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then((stream) => {
       console.log("웹캠 스트림 시작");
       video.srcObject = stream;
+      video.style.transform = 'scaleX(-1)';  
       video.play();
     })
     .catch((error) => {

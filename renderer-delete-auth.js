@@ -6,6 +6,7 @@ window.onload = () => {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then((stream) => {
       video.srcObject = stream;
+      video.style.transform = 'scaleX(-1)';  
     })
     .catch((error) => {
       console.error('웹캠 실행 오류:', error);

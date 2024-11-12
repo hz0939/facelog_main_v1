@@ -2,8 +2,8 @@
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
 
-const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
-const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
+const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
 
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -120,16 +120,15 @@ removeAllListeners: (channel) => {
   // 이메일 정보를 로컬 스토리지에서 가져오는 메서드
   
   // 사이트 데이터를 저장하는 메서드
-  saveSiteData: async (siteData) => {
-    try {
-      // Firestore에 사이트 데이터를 저장 요청
-      await ipcRenderer.invoke('save-site-data', siteData);
-      console.log("Firestore에 사이트 데이터 저장 성공:", siteData);
-    } catch (error) {
-      console.error("Firestore에 사이트 데이터 저장 실패:", error);
-    }
+  saveSiteData: (siteData) => {
+    console.log("saveSiteData 호출됨:", siteData);
+    ipcRenderer.invoke('save-site-data', siteData);
   },
   getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
+  getUserEmail: () => ipcRenderer.invoke('get-user-email'),
+
+  // 사이트 데이터 삭제 메서드
+  deleteSiteData: (userEmail, docId) => ipcRenderer.invoke('delete-site-data', userEmail, docId),
 
 });
 
@@ -150,44 +149,74 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ID와 비밀번호 필드 탐색 셀렉터 설정
-  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[type="text"]'];
-  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[type="password"]'];
+  const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
+  const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
+  let saveTimeout;
 
-  function captureLoginForm() {
-      const idField = document.querySelector(idSelectors.join(', '));
-      const passwordField = document.querySelector(passwordSelectors.join(', '));
+  function attemptSaveData(idValue, passwordValue) {
+    const cachedEmail = localStorage.getItem('userEmail');
+    const title = document.title || 'Untitled';
+    const icon = document.querySelector("link[rel~='icon']")?.href || '/icon.png';
+    const encodedUrl = encodeURIComponent(location.href);
 
-      if (idField && passwordField) {
-          console.log("ID와 비밀번호 입력 필드 감지됨");
-
-          idField.addEventListener('input', () => console.log("ID 필드 입력됨:", idField.value));
-          passwordField.addEventListener('input', () => console.log("Password 필드 입력됨:", passwordField.value));
-
-          const form = idField.closest('form') || passwordField.closest('form');
-          if (form) {
-              form.addEventListener('submit', (event) => {
-                  event.preventDefault();
-                  const id = idField.value.trim();
-                  const password = passwordField.value.trim();
-
-                  if (id && password && userEmail) {
-                      console.log("Firestore에 저장 요청 전송 전:", { id, password, url: window.location.href });
-                      window.api.send("save-site-data", { id, password, url: window.location.href, email: userEmail });
-
-                      // 페이지 전환 지연
-                      setTimeout(() => form.submit(), 2000);
-                  } else {
-                      console.log("사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.");
-                  }
-              });
-          }
-      } else {
-          console.log("입력 필드가 감지되지 않음");
-      }
+    if (cachedEmail && idValue && passwordValue) {
+      const siteData = {
+        id: idValue,
+        password: passwordValue,
+        url: encodedUrl,
+        email: cachedEmail,
+        title,
+        icon
+      };
+      console.log("Firestore에 저장 요청 전송 전:", siteData);
+      ipcRenderer.invoke('save-site-data', siteData);
+    } else {
+      console.log("사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.");
+    }
   }
 
-  // MutationObserver 설정
-  const observer = new MutationObserver(captureLoginForm);
+  let isAutoLoginInProgress = false;
+  function monitorInputFields() {
+    if (isAutoLoginInProgress) return; // 자동 로그인 중일 때 감시 중단
+
+    const idField = document.querySelector(idSelectors.join(', '));
+    const passwordField = document.querySelector(passwordSelectors.join(', '));
+
+    if (idField && passwordField) {
+      console.log("ID와 비밀번호 입력 필드 감지됨");
+      passwordField.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          attemptSaveData(idField.value.trim(), passwordField.value.trim());
+        }, 1000);
+      });
+    } else {
+      console.log("입력 필드가 감지되지 않음");
+    }
+  }
+
+  const observer = new MutationObserver(monitorInputFields);
   observer.observe(document.body, { childList: true, subtree: true });
-  captureLoginForm();
+  monitorInputFields();
+});
+
+ipcRenderer.on('disable-observer', () => {
+  isAutoLoginInProgress = true;
+  observer.disconnect();
+  console.log("MutationObserver 완전 비활성화됨");
+});
+
+ipcRenderer.on('enable-observer', () => {
+  isAutoLoginInProgress = false;
+  try {
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log("MutationObserver 다시 활성화됨");
+  } catch (error) {
+    console.error("MutationObserver 활성화 중 오류 발생:", error);
+  }
+});
+
+ipcRenderer.on('refresh-main-page', () => {
+  console.log("preload.js에서 'refresh-main-page' 이벤트 수신");
+  window.location.reload(); // 메인 페이지를 직접 새로고침
 });

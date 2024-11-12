@@ -44,6 +44,7 @@ async function startWebcam() {
     // 새로운 스트림을 요청하고 video 요소에 할당
     stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
+    video.style.transform = 'scaleX(-1)';  
     await video.play();
     video.style.display = 'block'; // 비디오 요소 보이기
     console.log("웹캠이 정상적으로 시작되었습니다.");
@@ -95,7 +96,7 @@ function showToast(message) {
 function showSystemNotification(message) {
   const notification = new Notification("얼굴 인증 알림", {
     body: message,
-    icon: "./icon.png", // 아이콘을 추가할 수 있습니다.
+    icon: "img/looknlock-logo.png", // 아이콘을 추가할 수 있습니다.
     silent: true, // 소리 없이 표시
   });
 
@@ -210,7 +211,7 @@ async function performFaceVerification() {
     function startPeriodicVerification() {
       async function verify() {
         await performFaceVerification();
-        setTimeout(verify, 10000); // 30초 간격으로 호출
+        setTimeout(verify, 1000000); // 30초 간격으로 호출
       }
       verify();
     }
