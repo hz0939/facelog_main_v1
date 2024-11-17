@@ -1,6 +1,11 @@
-
+//preload.js 암호화 작동이 잘 안 됨
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('cryptoAPI', {
+  encryptData: (text) => ipcRenderer.invoke('encrypt-data', text),
+  decryptData: (text) => ipcRenderer.invoke('decrypt-data', text),
+});
 
 const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
 const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];

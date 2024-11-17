@@ -108,48 +108,48 @@ function startFaceVerificationNotification() {
 }
 
 
+//site id와 비밀번호가 복호화 됨
 async function loadUserSites(userEmail) {
   const sites = await window.electronAPI.getUserSites(userEmail);
+
   if (sites.length > 0) {
     dataDisplay.innerHTML = sites.map(site => {
-      const fullTitle = site.title || 'Untitled';
-      const maxLength = 7;
-      const shortTitle = fullTitle.length > maxLength ? `${fullTitle.slice(0, maxLength)}...` : fullTitle;
-
       return `
         <div class="site-entry">
-          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}" data-doc-id="${site.id}">
-            <img class="site-icon-img" src="${site.icon || 'default-icon.png'}" alt="${fullTitle} icon">
-            <p class="site-title">${shortTitle}</p>
+          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}">
+            <img src="${site.icon || 'default-icon.png'}" alt="${site.name}">
+            <p>${site.name}</p>
           </button>
-          <button class="more-options">...</button>
-          <div class="context-menu">
-            <button class="edit-button">바로가기 수정</button>
-            <button class="delete-button">삭제</button>
-          </div> 
         </div>
       `;
     }).join('');
 
-    document.querySelectorAll('.site-icon').forEach(icon => {
-      icon.addEventListener('click', async () => {
-        const url = decodeURIComponent(icon.getAttribute('data-url'));
-        const id = icon.getAttribute('data-id');
-        const password = icon.getAttribute('data-password');
 
-        try {
-          window.electronAPI.send('disable-observer');
-          await window.electronAPI.autoLogin(url, id, password);
-          window.electronAPI.send('enable-observer');
-        } catch (error) {
-          console.error("자동 로그인 중 오류 발생:", error);
-        }
-      });
+    // 사이트 아이콘 클릭 시 복호화 및 자동 로그인
+    document.querySelectorAll('.site-icon').forEach(async (icon) => {
+      const encryptedID = icon.getAttribute('data-id');
+      const encryptedPassword = icon.getAttribute('data-password');
+
+      try {
+        // 암호화된 ID와 비밀번호 복호화
+        const decryptedID = await window.cryptoAPI.decryptData(encryptedID);
+        const decryptedPassword = await window.cryptoAPI.decryptData(encryptedPassword);
+
+        icon.addEventListener('click', () => {
+          const url = decodeURIComponent(icon.getAttribute('data-url'));
+          console.log(`자동 로그인 시도: URL=${url}, ID=${decryptedID}, Password=${decryptedPassword}`);
+          window.electronAPI.autoLogin(url, decryptedID, decryptedPassword);
+        });
+      } catch (error) {
+        console.error('복호화 오류:', error);
+        alert('복호화 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      }
     });
   } else {
     dataDisplay.innerHTML = "<p>등록된 사이트 정보가 없습니다.</p>";
   }
 }
+
 
 
   // more-options 버튼 클릭 시 context-menu 표시
@@ -337,19 +337,33 @@ function startPeriodicVerification() {
     console.error("addButton 요소를 찾을 수 없습니다.");
   }
   
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log("DOMContentLoaded 이벤트 트리거");
-  dataDisplay = document.getElementById('data-display');
-
-  if (!dataDisplay) {
-    console.error("dataDisplay 요소를 찾을 수 없습니다.");
-    return;
-  }
-
-  await startWebcam();
-  await loadUserSites(localStorage.getItem('userEmail'));
-  startPeriodicVerification();
-});
+  document.addEventListener('DOMContentLoaded', async () => {
+    console.log("DOMContentLoaded 이벤트 트리거");
+  
+    // cryptoAPI 준비 상태 확인
+    if (window.cryptoAPI && typeof window.cryptoAPI.decryptData === 'function') {
+      console.log("cryptoAPI 준비 완료");
+  
+      // 테스트 복호화 호출 (임의의 encryptedText 대신 실제 암호화된 텍스트를 넣어도 됨)
+      const decryptedData = await window.cryptoAPI.decryptData("encryptedText");
+      console.log("복호화된 데이터:", decryptedData);
+    } else {
+      console.error("cryptoAPI가 준비되지 않았습니다.");
+      return;
+    }
+  
+    dataDisplay = document.getElementById('data-display');
+  
+    if (!dataDisplay) {
+      console.error("dataDisplay 요소를 찾을 수 없습니다.");
+      return;
+    }
+  
+    await startWebcam();
+    await loadUserSites(localStorage.getItem('userEmail'));
+    startPeriodicVerification();
+  });
+  
 
 
 // 'refresh-main-page' 이벤트 수신 시 Firestore에서 최신 사이트 정보 불러오기

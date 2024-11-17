@@ -1,4 +1,6 @@
 //main.js
+require('dotenv').config(); // .env 파일 로드
+const CryptoJS = require('crypto-js'); //암호화 복호화 모듈
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
@@ -8,6 +10,41 @@ const { getAuth, onAuthStateChanged, setPersistence, createUserWithEmailAndPassw
 const fs = require('fs');
 const { execFile } = require('child_process');
 const admin = require('firebase-admin');
+const SECRET_KEY = process.env.SECRET_KEY; // .env 파일에서 SECRET_KEY 가져오기
+
+// 암호화 함수
+ipcMain.handle('encrypt-data', (event, text) => {
+  try {
+    const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+    return encrypted;
+  } catch (error) {
+    console.error('암호화 오류:', error);
+    return null;
+  }
+});
+
+// 복호화 함수
+ipcMain.handle('decrypt-data', (event, encryptedText) => {
+  try {
+    if (!encryptedText || typeof encryptedText !== 'string') {
+      console.error('잘못된 입력 값:', encryptedText);
+      return null;
+    }
+    const bytes = CryptoJS.AES.decrypt(encryptedText, SECRET_KEY);
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+
+    if (!decrypted) {
+      console.error('복호화 실패: 결과가 비어 있습니다.');
+      return null;
+    }
+
+    return decrypted;
+  } catch (error) {
+    console.error('복호화 오류:', error);
+    return null;
+  }
+});
+
 
 // ID와 패스워드 입력 필드의 셀렉터 리스트
 const idSelectors = [
@@ -79,7 +116,9 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // Preload 스크립트를 사용해 렌더러와 메인 프로세스 간의 통신 설정
       contextIsolation: true,
-      nodeIntegration: false,  // NodeIntegration을 비활성화하여 보안 강화
+      nodeIntegration: false, 
+      sandbox: false,
+   // NodeIntegration을 비활성화하여 보안 강화
     }
   });
 
