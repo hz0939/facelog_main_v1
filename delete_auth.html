@@ -51,5 +51,13 @@
     <video id="video" autoplay></video>
     <button id="captureButton">캡처</button>
   </main>
+
+  <button type="button" id="back-button" class="back-button">뒤로 가기</button>
+<script>
+    document.getElementById('back-button').addEventListener('click', () => {
+        window.location.href = 'mainpage.html'; // 메인 페이지로 이동
+    });
+</script>
+
 </body>
 </html>
