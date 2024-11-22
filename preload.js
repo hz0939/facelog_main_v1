@@ -1,4 +1,4 @@
-//preload.js 이건 암호화 안 되는데 작동은 잘 되는 코드
+//preload.js 암호화 작동이 잘 안 됨
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
 
@@ -134,7 +134,6 @@ removeAllListeners: (channel) => {
 
   // 사이트 데이터 삭제 메서드
   deleteSiteData: (userEmail, docId) => ipcRenderer.invoke('delete-site-data', userEmail, docId),
-
 });
 
 
@@ -156,61 +155,49 @@ window.addEventListener("DOMContentLoaded", async () => {
   // ID와 비밀번호 필드 탐색 셀렉터 설정
   const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]','input[type="text"]'];
   const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]','input[type="password"]'];
-  let saveTimeout = null;
-  let isEncryptionInProgress = false;
-  
-  async function encryptAndSaveData(idValue, passwordValue) {
-      try {
-          isEncryptionInProgress = true; // 암호화 시작
-          const encryptedID = await window.cryptoAPI.encrypt(idValue.trim());
-          const encryptedPassword = await window.cryptoAPI.encrypt(passwordValue.trim());
-          attemptSaveData(encryptedID, encryptedPassword); // 암호화 완료 후 저장
-      } catch (error) {
-          console.error("암호화 또는 저장 중 오류 발생:", error);
-      } finally {
-          isEncryptionInProgress = false; // 암호화 종료
-      }
-  }
-  
+  let saveTimeout;
+
   function attemptSaveData(idValue, passwordValue) {
-      const cachedEmail = localStorage.getItem('userEmail');
-      const title = document.title || 'Untitled';
-      const icon = document.querySelector("link[rel~='icon']")?.href || '/icon.png';
-      const encodedUrl = encodeURIComponent(location.href);
-  
-      if (cachedEmail && idValue && passwordValue) {
-          const siteData = {
-              id: idValue,
-              password: passwordValue,
-              url: encodedUrl,
-              email: cachedEmail,
-              title,
-              icon
-          };
-          ipcRenderer.invoke('save-site-data', siteData)
-              .then(() => console.log("Firestore 저장 성공"))
-              .catch((error) => console.error("Firestore 저장 실패:", error));
-      }
+    const cachedEmail = localStorage.getItem('userEmail');
+    const title = document.title || 'Untitled';
+    const icon = document.querySelector("link[rel~='icon']")?.href || '/icon.png';
+    const encodedUrl = encodeURIComponent(location.href);
+
+    if (cachedEmail && idValue && passwordValue) {
+      const siteData = {
+        id: idValue,
+        password: passwordValue,
+        url: encodedUrl,
+        email: cachedEmail,
+        title,
+        icon
+      };
+      console.log("Firestore에 저장 요청 전송 전:", siteData);
+      ipcRenderer.invoke('save-site-data', siteData);
+    } else {
+      console.log("사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.");
+    }
   }
-  
+
+  let isAutoLoginInProgress = false;
   function monitorInputFields() {
-      const idField = document.querySelector(idSelectors.join(', '));
-      const passwordField = document.querySelector(passwordSelectors.join(', '));
-  
-      if (idField && passwordField) {
-          passwordField.addEventListener('input', () => {
-              clearTimeout(saveTimeout); // 기존 타이머 초기화
-              saveTimeout = setTimeout(() => {
-                  if (!isEncryptionInProgress) { // 암호화 중이 아니면 실행
-                      encryptAndSaveData(idField.value, passwordField.value);
-                  } else {
-                      console.log("암호화 중, 저장 대기 중...");
-                  }
-              }, 1000); // 입력 후 1초 대기
-          });
-      }
+    if (isAutoLoginInProgress) return; // 자동 로그인 중일 때 감시 중단
+
+    const idField = document.querySelector(idSelectors.join(', '));
+    const passwordField = document.querySelector(passwordSelectors.join(', '));
+
+    if (idField && passwordField) {
+      console.log("ID와 비밀번호 입력 필드 감지됨");
+      passwordField.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          attemptSaveData(idField.value.trim(), passwordField.value.trim());
+        }, 1000);
+      });
+    } else {
+      console.log("입력 필드가 감지되지 않음");
+    }
   }
-  
 
   const observer = new MutationObserver(monitorInputFields);
   observer.observe(document.body, { childList: true, subtree: true });
@@ -236,4 +223,4 @@ ipcRenderer.on('enable-observer', () => {
 ipcRenderer.on('refresh-main-page', () => {
   console.log("preload.js에서 'refresh-main-page' 이벤트 수신");
   window.location.reload(); // 메인 페이지를 직접 새로고침
-});  //뒤로 가기 
+});

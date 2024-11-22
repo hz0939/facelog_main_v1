@@ -18,14 +18,16 @@
     <button id="submitLogin">다음</button>
   </main>
 
+  <script type="module" src="./renderer-login.js"></script>
+
   <button type="button" id="back-button" class="back-button">뒤로 가기</button>
+
+<script src="site_registration.js"></script>
 <script>
     document.getElementById('back-button').addEventListener('click', () => {
-        window.location.href = 'index.html'; // 로그인/회원가입 페이지로 이동
+        window.location.href = 'index.html'; // index.html로 이동
     });
 </script>
 
-
-  <script type="module" src="./renderer-login.js"></script>
 </body>
 </html>

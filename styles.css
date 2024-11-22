@@ -403,11 +403,10 @@ main {
     background-color: #2c5bbf;
 }
 
-/* ë¤ëĄ ę°ę¸° ë˛íź ě¤íěź */
 .back-button {
-  position: fixed; /* 화면에 고정 */
-  top: 40px; /* 위에서 40px 떨어짐 */
-  right: 20px; /* 오른쪽에서 20px 떨어짐 */
+  position: absolute; /* 절대 위치 지정 */
+  top: 20px; /* 화면 위쪽에서 20px 떨어짐 */
+  right: 20px; /* 화면 오른쪽에서 20px 떨어짐 */
   width: 150px;
   height: 40px;
   font-size: 14px;
@@ -417,7 +416,6 @@ main {
   border-radius: 24px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
-  z-index: 1000; /* 다른 요소 위에 표시 */
 }
 
 .back-button:hover {

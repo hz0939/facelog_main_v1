@@ -528,7 +528,10 @@ app.on('window-all-closed', () => {
   if (!mainWindow || allWindows.length === 0) {
     app.quit();
   }
-});
+}); 
+
+
+
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
