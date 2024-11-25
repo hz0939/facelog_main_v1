@@ -217,7 +217,7 @@ function startPeriodicVerification() {
     if (!isVerifying) {
       await performFaceVerification();
     }
-    setTimeout(verify, 30000);
+    setTimeout(verify, 600000); //얼굴인증 주기
   }
   verify();
 }
@@ -361,7 +361,8 @@ function startPeriodicVerification() {
   
     await startWebcam();
     await loadUserSites(localStorage.getItem('userEmail'));
-    startPeriodicVerification();
+    // 주기적 얼굴 인증 비활성화
+  // startPeriodicVerification();
   });
   
 

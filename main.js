@@ -173,7 +173,7 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
       return;
     }
 
-    execFile('python', [pythonScriptPath, tempImagePath], (error, stdout, stderr) => {
+    execFile('python3', [pythonScriptPath, tempImagePath], (error, stdout, stderr) => {
       fs.unlink(tempImagePath, (unlinkErr) => {
         if (unlinkErr) {
           console.error('임시 파일 삭제 오류:', unlinkErr);
