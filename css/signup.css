@@ -18,16 +18,27 @@ body {
     color: white;
   }
   
-  .left-panel img {
-    width: 120px;
-    margin-bottom: 20px;
-  }
-  
-  .left-panel h1 {
-    font-size: 2rem;
+  /* 왼쪽 상단 로고 */
+.left-logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.left-logo img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.left-logo span {
+    font-size: 1rem;
     font-weight: bold;
-    margin: 0;
-  }
+    color: #ffffff;
+}
   
   /* 오른쪽 폼 영역 */
   .right-panel {

@@ -7,17 +7,21 @@
   <link rel="stylesheet" href="./css/login.css">
 </head>
 <body>
-  <div class="left-panel">
-    <img src="./img/looknlock-logo.png" alt="look & lock logo">
-    <h1>look & lock</h1>
-  </div>
-  <div class="right-panel">
-    <button type="button" id="back-button" class="back-button">&lt;</button>
-    <div class="login-container">
-      <h2>로그인</h2>
-      <label for="email">Email address</label>
-      <input type="email" id="email" placeholder="" required>
-      <button id="submitLogin">얼굴 인증 하기</button>
+  <div class="main-content">
+    <div class="left-panel">
+      <div class="left-logo" onclick="navigateToIndex()">
+        <img src="./img/looknlock-logo.png" alt="logo icon">
+        <span>look & lock</span>
+      </div>
+    </div>
+    <div class="right-panel">
+      <button type="button" id="back-button" class="back-button">&lt;</button>
+      <div class="login-container">
+        <h2>로그인</h2>
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="" required>
+        <button id="submitLogin">얼굴 인증 하기</button>
+      </div>
     </div>
   </div>
 
@@ -27,6 +31,9 @@
 
 <script src="site_registration.js"></script>
 <script>
+  function navigateToIndex() {
+      window.location.href = 'index.html'; // index.html로 이동
+    }
     document.getElementById('back-button').addEventListener('click', () => {
         window.location.href = 'index.html'; // index.html로 이동
     });
