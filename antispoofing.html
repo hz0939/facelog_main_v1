@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Look & Lock - Anti-Spoofing</title>
+  <script src="./renderer-antispoofing.js" defer></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      display: flex;
+      width: 80%;
+      height: 80%;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .left-panel {
+      flex: 1;
+      background-color: #4a86e8;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .left-panel .logo {
+      width: 50px;
+      height: 50px;
+      margin-bottom: 20px;
+    }
+
+    .left-panel h1 {
+      font-size: 24px;
+      line-height: 1.5;
+    }
+
+    .right-panel {
+      flex: 1;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .loading-animation {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #4a86e8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .result-text {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+
+
+    .loading-animation.success {
+      border: none;
+      width: 40px;
+      height: 40px;
+      background-color: #4caf50; /* 초록색 배경 */
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loading-animation.success::before {
+      content: "✔"; /* 체크 표시 추가 */
+      color: white;
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      background-color: #ccc; /* 초기 회색 버튼 */
+      cursor: not-allowed;
+      transition: background-color 0.3s ease;
+    }
+
+    button:enabled {
+      cursor: pointer;
+      background-color: #e74c3c; /* 활성화 시 빨간 버튼 */
+    }
+
+    /* 로딩 애니메이션 */
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left-panel">
+      <img src="img\looknlock-logo.png" alt="look & lock" class="logo">
+      <h1>Anti-Spoofing</h1>
+    </div>
+    <div class="right-panel">
+      <div class="loading-animation" id="loading-animation"></div>
+      <p id="spoof-result" class="result-text">로딩 중...</p>
+      <button id="nextButton" disabled>다음</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사이트 등록</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="site_registration.js"></script> <!-- site_registration.js 불러오기 -->
+</head>
+<body>
+    <h1>사이트 등록</h1>
+
+    <form id="site-form" class="signup-container">
+        <label for="site-name">사이트 이름</label>
+        <input type="text" id="site-name" name="site-name" required><br>
+
+        <label for="site-url">사이트 URL</label>
+        <input type="text" id="site-url" name="site-url" required><br>
+
+        <label for="site-id">사이트 ID</label>
+        <input type="text" id="site-id" name="site-id" required><br>
+
+        <label for="site-password">사이트 비밀번호</label>
+        <input type="password" id="site-password" name="site-password" required><br><br>
+
+        <button type="submit" id="submit-button">사이트 등록</button>
+    </form>
+
+    <button type="button" id="back-button" class="back-button">뒤로 가기</button>
+
+    <script src="site_registration.js"></script>
+    <script>
+        document.getElementById('back-button').addEventListener('click', () => {
+            window.location.href = 'mainpage.html'; // mainpage로 이동
+        });
+    </script>
+
+</body>
+</html>

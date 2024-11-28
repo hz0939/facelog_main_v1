@@ -1,0 +1,131 @@
+/* 전체 배경 및 기본 설정 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+}
+
+/* 메인 컨텐츠 */
+.main-content {
+    display: flex;
+    flex: 1;
+}
+
+/* 왼쪽 파란색 패널 */
+.left-panel {
+    background-color: #4285f4;
+    width: 50%;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 40px;
+    position: relative;
+}
+
+/* 왼쪽 상단 로고 */
+.left-logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.left-logo img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.left-logo span {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* 애니메이션 텍스트 */
+.animated-text h2 {
+    margin: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    animation: typing 2s steps(30, end) forwards;
+}
+
+.animated-text h2 {
+    font-weight: bold;
+    /*animation-delay: 0.5s;*/
+}
+
+/* 애니메이션 키프레임 */
+@keyframes typing {
+    from {
+        width: 0;
+        opacity: 1;
+    }
+    to {
+        width: 100%;
+        opacity: 1;
+    }
+}
+
+/* 중앙 텍스트와 설명 */
+.left-panel h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 20px;
+}
+
+.left-panel p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+/* 오른쪽 패널 */
+.right-panel {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.right-panel button {
+    width: 200px;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+/* 회색 버튼 스타일 */
+.gray-button {
+    background-color: #666666;
+    color: white;
+}
+
+.gray-button:hover {
+    background-color: #555555;
+}
+
+/* 파란색 버튼 스타일 */
+.blue-button {
+    background-color: #4285f4;
+    color: white;
+}
+
+.blue-button:hover {
+    background-color: #357ae8;
+}

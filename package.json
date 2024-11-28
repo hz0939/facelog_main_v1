@@ -1,0 +1,24 @@
+{
+  "name": "facelog",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "electron": "^32.2.5"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.5",
+    "face-api.js": "^0.22.2",
+    "firebase": "^11.0.2",
+    "firebase-admin": "^12.7.0"
+  }
+}
