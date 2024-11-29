@@ -17,6 +17,7 @@ import json
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import tensorflow as tf
 
+
 # 모델 정의
 class CDCN_Spatial_Frequency(nn.Module):
     def __init__(self):
@@ -127,3 +128,5 @@ while True:
         # JSON 형태로 결과를 출력
         print(json.dumps(result))
         sys.stdout.flush() 
+
+        
