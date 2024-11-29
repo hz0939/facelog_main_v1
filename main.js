@@ -191,8 +191,17 @@ function closeWindow(window) {
 }
 
 
+// main.js에서 start-antispoofing 이벤트 수정
 ipcMain.on('start-antispoofing', () => {
   const pythonScriptPath = path.join(__dirname, 'FFT_test_6channel_d.py');
+
+  // 기존 Python 프로세스 종료
+  if (pythonProcess) {
+    pythonProcess.kill();
+    console.log("기존 Python 프로세스 종료됨");
+  }
+
+  // 새로운 Python 프로세스 시작
   pythonProcess = spawn('python', [pythonScriptPath]);
 
   pythonProcess.stdout.on('data', (data) => {
@@ -202,7 +211,7 @@ ipcMain.on('start-antispoofing', () => {
     try {
       const parsedResult = JSON.parse(result);
       BrowserWindow.getAllWindows().forEach((window) => {
-        window.webContents.send('update-result', parsedResult); // 렌더러로 데이터 전송
+        window.webContents.send('update-result', parsedResult);
       });
     } catch (error) {
       console.error('JSON 파싱 오류:', error);
@@ -217,6 +226,7 @@ ipcMain.on('start-antispoofing', () => {
     console.log(`Python Process Closed: ${code}`);
   });
 });
+
 
 ipcMain.on('stop-antispoofing', () => {
   if (pythonProcess) {
@@ -374,13 +384,18 @@ ipcMain.on('login', async (event, { email, password }) => {
 
 
 
-
-
-// 로그아웃 시 이메일 초기화
 ipcMain.on('logout', async (event) => {
   try {
+    // Firebase 로그아웃 처리
     await signOut(auth);
-    loggedInUserEmail = null;
+
+    // Python 프로세스 종료
+    if (pythonProcess) {
+      pythonProcess.kill();
+      pythonProcess = null;
+      console.log("Python 프로세스 종료됨");
+    }
+
     console.log('로그아웃 성공');
     event.sender.send('logout-success');
   } catch (error) {
@@ -388,6 +403,7 @@ ipcMain.on('logout', async (event) => {
     event.sender.send('logout-failed', error.message);
   }
 });
+
 
 // 회원탈퇴
 ipcMain.on('navigate-to-delete-auth', () => {
@@ -579,8 +595,42 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
 
 ipcMain.on('navigate-to-antispoofing', () => {
   console.log("Navigating to antispoofing page");
-  const win = BrowserWindow.getAllWindows()[0]; // 첫 번째 창 가져오기
-  win.loadFile('antispoofing.html'); // antispoofing.html 로드
+
+  // 기존 Python 프로세스 종료
+  if (pythonProcess) {
+    pythonProcess.kill();
+    console.log("기존 Python 프로세스 종료됨");
+  }
+
+  // 새로운 Python 프로세스 시작
+  const pythonScriptPath = path.join(__dirname, 'FFT_test_6channel_d.py');
+  pythonProcess = spawn('python', [pythonScriptPath]);
+
+  pythonProcess.stdout.on('data', (data) => {
+    const result = data.toString().trim();
+    console.log(`Python Output: ${result}`);
+
+    try {
+      const parsedResult = JSON.parse(result);
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-result', parsedResult);
+      });
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+    }
+  });
+
+  pythonProcess.stderr.on('data', (data) => {
+    console.error(`Python Error: ${data.toString()}`);
+  });
+
+  pythonProcess.on('close', (code) => {
+    console.log(`Python Process Closed: ${code}`);
+  });
+
+  // 페이지 로드
+  const win = BrowserWindow.getAllWindows()[0];
+  win.loadFile('antispoofing.html');
 });
 
 

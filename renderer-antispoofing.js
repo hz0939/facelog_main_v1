@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const userEmail = localStorage.getItem('userEmail'); // localStorage에서 이메일 가져오기
   let realCount = 0; // Real 카운트 변수
 
+
+
   // 이메일 확인
   if (!userEmail) {
     alert('이메일 정보가 없습니다. 로그인 페이지로 돌아갑니다.');
@@ -27,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 초기화 실행
   initializePage();
 
+  // Python 프로세스 시작
+window.electronAPI.startAntispoofing();
+
+
+  // 기존 리스너 제거 후 새 리스너 등록
+  window.electronAPI.removeAllListeners('update-result');
   // 안티스푸핑 결과 수신
   window.electronAPI.onUpdateResult((result) => {
     console.log('안티스푸핑 결과 수신:', result);

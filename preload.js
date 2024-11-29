@@ -13,17 +13,15 @@ const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[
 
 contextBridge.exposeInMainWorld('electronAPI', {
 
-
-
-  navigateToLoginFace: () => ipcRenderer.send('navigate-to-login-face'), // login_face.html 이동
-  stopAntispoofing: () => ipcRenderer.send('stop-antispoofing'), // Python 프로세스 종료
-  navigateToAntispoofing: () => ipcRenderer.send('navigate-to-antispoofing'), // antispoofing.html 이동
+  startAntispoofing: () => ipcRenderer.send('start-antispoofing'),
+  stopAntispoofing: () => ipcRenderer.send('stop-antispoofing'),
+  navigateToAntispoofing: () => ipcRenderer.send('navigate-to-antispoofing'),
   onUpdateResult: (callback) => {
-    ipcRenderer.on('update-result', (event, result) => {
-      callback(result); // 안티스푸핑 결과 수신
-    });
+    ipcRenderer.removeAllListeners('update-result');
+    ipcRenderer.on('update-result', (event, result) => callback(result));
   },
-
+  logOut: () => ipcRenderer.send('logout'),
+  
   // Python이 준비되었음을 확인하거나 요청을 보낼 수 있는 메서드
   sendStartRequest: () => ipcRenderer.send('start-antispoofing'),
   sendStopRequest: () => ipcRenderer.send('stop-antispoofing'),
@@ -88,7 +86,7 @@ removeAllListeners: (channel) => {
   getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
   onAuthStateChanged: (callback) => ipcRenderer.on('auth-state-changed', (event, data) => callback(data)),
   login: (credentials) => ipcRenderer.send('login', credentials),
-  logOut: () => ipcRenderer.send('logout'),
+
 
  
   
@@ -142,8 +140,7 @@ removeAllListeners: (channel) => {
   },
   
 
-  // 로그아웃 기능
-  logOut: () => ipcRenderer.send('logout'),
+
 
   // 회원 탈퇴 페이지 이동
   navigateToDeleteAuth: () => ipcRenderer.send('navigate-to-delete-auth'),
