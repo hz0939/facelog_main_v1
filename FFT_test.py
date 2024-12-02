@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import cv2
-from facenet_pytorch import MTCNN, InceptionResnetV1
+from mtcnn import MTCNN
 from torchvision import transforms
 from PIL import Image
 import os
@@ -16,6 +16,7 @@ import json
 # oneDNN 최적화를 비활성화
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import tensorflow as tf
+
 
 # 모델 정의
 class CDCN_Spatial_Frequency(nn.Module):
@@ -51,8 +52,6 @@ class CDCN_Spatial_Frequency(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
-
-
 # Flask 서버 초기화
 app = Flask(__name__)
 
@@ -98,10 +97,6 @@ if not cap.isOpened():
     print("웹캠을 열 수 없습니다.", file=sys.stderr)
     sys.exit(1)
 
-# InceptionResnetV1 모델 초기화
-embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
-
-
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -109,43 +104,29 @@ while True:
         break
 
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    boxes, _ = detector.detect(rgb_frame)  # 얼굴 검출
+    faces = detector.detect_faces(rgb_frame)
 
-    if boxes is not None:
-        for box in boxes:
-            x1, y1, x2, y2 = [int(coord) for coord in box]
-            face_image = rgb_frame[y1:y2, x1:x2]
-            face_pil = Image.fromarray(face_image)
+    for face in faces:
+        x, y, w, h = face['box']
+        face_image = rgb_frame[y:y+h, x:x+w]
+        face_pil = Image.fromarray(face_image)
 
-            face_tensor = transform(face_pil).unsqueeze(0).to(device)
+        face_tensor = transform(face_pil).unsqueeze(0).to(device)
+        with torch.no_grad():
+            outputs = model(face_tensor, face_tensor)
+            probabilities = torch.softmax(outputs, dim=1)
+            real_prob = probabilities[0][0].item()
+            fake_prob = probabilities[0][1].item()
+            label = 'Real' if real_prob > fake_prob else 'Fake'
 
+        result = {
+            "label": label,
+            "real_prob": real_prob,
+            "fake_prob": fake_prob
+        }
 
-#lastEmbedding
-            with torch.no_grad():
-                # 얼굴 임베딩 생성
-                embedding = embedding_model(face_tensor)  # 정의된 embedding_model 사용
-                embedding_np = embedding.cpu().numpy()  # NumPy 배열로 변환
+        # JSON 형태로 결과를 출력
+        print(json.dumps(result))
+        sys.stdout.flush() 
 
-                # Spoof detection 모델 처리
-                fft_face = fft_transform(face_tensor)  # FFT 변환
-                outputs = model(face_tensor, fft_face)
-                probabilities = torch.softmax(outputs, dim=1)
-                real_prob = probabilities[0][0].item()
-                fake_prob = probabilities[0][1].item()
-                label = 'Real' if real_prob > fake_prob else 'Fake'
-
-                # JSON 형식으로 결과 생성
-                result = {
-                    "label": label,
-                    "real_prob": real_prob,
-                    "fake_prob": fake_prob,
-                    "embedding_preview": embedding_np[0][:10].tolist(),  # 임베딩 첫 10개 값만 출력
-                    "embedding": embedding_np[0].tolist()  # 전체 임베딩 데이터를 포함
-                }
-
-                # JSON으로 출력
-                print(json.dumps(result))
-                sys.stdout.flush()
-
-cap.release()
-cv2.destroyAllWindows()
+        

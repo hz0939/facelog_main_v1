@@ -299,7 +299,7 @@ function startPeriodicVerification() {
           const similarity = cosSimilarity(newEmbeddingArray, storedEmbedding);
           console.log('코사인 유사도:', similarity);
   
-          if (similarity > 0.75) {
+          if (similarity > 0.7) {
             showToast('얼굴 인증 성공');
           } else {
             alert('얼굴 인증 실패. 자동 로그아웃을 수행합니다.');

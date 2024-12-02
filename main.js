@@ -14,6 +14,26 @@ const SECRET_KEY = process.env.SECRET_KEY; // .env 파일에서 SECRET_KEY 가�
 
 let pythonProcess;
 let win;
+let mainWindow;
+let lastEmbedding = null; // 전역 변수로 임베딩 값을 저장
+
+
+// IPC로 임베딩 값을 저장
+ipcMain.on('save-embedding', (event, embedding) => {
+  console.log("저장된 임베딩 값:", embedding);
+  lastEmbedding = embedding; // 임베딩 값을 전역 변수에 저장
+});
+
+// 다른 페이지에서 임베딩 값을 요청
+ipcMain.handle('get-embedding', async () => {
+  if (lastEmbedding) {
+      return lastEmbedding; // 저장된 임베딩 값을 반환
+  } else {
+      throw new Error("저장된 임베딩 값이 없습니다.");
+  }
+});
+
+
 
 
 // 암호화 함수
@@ -191,7 +211,6 @@ function closeWindow(window) {
 }
 
 
-// main.js에서 start-antispoofing 이벤트 수정
 ipcMain.on('start-antispoofing', () => {
   const pythonScriptPath = path.join(__dirname, 'FFT_test_6channel_d.py');
 
@@ -263,6 +282,7 @@ ipcMain.on('send-embedding-request', async (event, imageData) => {
     console.error('임베딩 요청 오류:', error);
   }
 });
+
 
 
 

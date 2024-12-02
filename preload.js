@@ -13,9 +13,13 @@ const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[
 
 contextBridge.exposeInMainWorld('electronAPI', {
 
+  saveEmbedding: (embedding) => ipcRenderer.send('save-embedding', embedding),
+  getEmbedding: () => ipcRenderer.invoke('get-embedding'), // 메인 프로세스에서 임베딩 값 가져오기
+
   startAntispoofing: () => ipcRenderer.send('start-antispoofing'),
   stopAntispoofing: () => ipcRenderer.send('stop-antispoofing'),
   navigateToAntispoofing: () => ipcRenderer.send('navigate-to-antispoofing'),
+
   onUpdateResult: (callback) => {
     ipcRenderer.removeAllListeners('update-result');
     ipcRenderer.on('update-result', (event, result) => callback(result));

@@ -4,8 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextButton = document.getElementById('nextButton');
   const userEmail = localStorage.getItem('userEmail'); // localStorage에서 이메일 가져오기
   let realCount = 0; // Real 카운트 변수
-
-
+  let lastEmbedding = null; // 마지막 임베딩 값을 저장할 변수
 
   // 이메일 확인
   if (!userEmail) {
@@ -30,11 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initializePage();
 
   // Python 프로세스 시작
-window.electronAPI.startAntispoofing();
-
+  window.electronAPI.startAntispoofing();
 
   // 기존 리스너 제거 후 새 리스너 등록
   window.electronAPI.removeAllListeners('update-result');
+
   // 안티스푸핑 결과 수신
   window.electronAPI.onUpdateResult((result) => {
     console.log('안티스푸핑 결과 수신:', result);
@@ -52,6 +51,15 @@ window.electronAPI.startAntispoofing();
       console.log(`Real 횟수: ${realCount}`);
       spoofResultElement.textContent = `실제 얼굴 확인됨! (${realCount}/5)`;
 
+    // 전체 임베딩 데이터 저장
+    if (result.embedding) {
+      lastEmbedding = result.embedding; // 전체 임베딩 저장
+      window.electronAPI.saveEmbedding(lastEmbedding); // Electron 메인 프로세스에 저장
+      console.log('임베딩 값이 성공적으로 저장되었습니다.');
+    } else {
+      console.error('임베딩 값이 없습니다. 저장하지 못했습니다.');
+    }
+    
       // Real이 5번 이상 감지되면
       if (realCount >= 5) {
         console.log('Real 결과 5번 도달, Python 프로세스 종료 요청');
