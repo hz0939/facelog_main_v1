@@ -26,7 +26,7 @@ body {
   .center-container h1 {
     font-size: 2rem;
     font-weight: bold;
-    color: #333;
+    color: #4285f4;
     line-height: 1.5;
   }
 
@@ -139,6 +139,8 @@ body {
  /* 사이트 아이콘 및 제목 스타일 수정 */
  .site-item {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
     margin-top: 20px;
   }
@@ -165,10 +167,13 @@ body {
   }
   
   .site-icon-img {
-    width: 35px;
-    height: 35px;
-    object-fit: cover;
-    border-radius: 8px;
+    position: absolute;
+    top: -10%; /* 이미지의 위치를 조정하여 중앙에 맞춤 */
+    left: -10%; /* 이미지를 부모 크기에 비례해 확장 */
+    width: 200%;
+    height: 200%;
+    object-fit: contain; /* 아이콘을 원 안에 꽉 차게 표시 */
+    object-position: center; /* 이미지를 부모의 중심에 맞춤 */
   }
   
   .site-title {
@@ -177,6 +182,8 @@ body {
     margin-top: 10px;
     color: #333;
     text-align: center; /* 타이틀을 중앙 정렬 */
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .site-entry:hover {
