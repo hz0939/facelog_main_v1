@@ -60,13 +60,47 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('임베딩 값이 없습니다. 저장하지 못했습니다.');
     }
     
-      // Real이 5번 이상 감지되면
-      if (realCount >= 5) {
-        console.log('Real 결과 5번 도달, Python 프로세스 종료 요청');
-        loadingAnimation.classList.remove('spin'); // 로딩 애니메이션 제거
-        loadingAnimation.classList.add('success'); // 체크 표시 추가
-        window.electronAPI.stopAntispoofing(); // Python 프로세스 종료 요청
-        nextButton.disabled = false; // 버튼 활성화
+// Real이 5번 이상 감지되면
+if (realCount >= 5) {
+  console.log('Real 결과 5번 도달, 추가 프레임 캡처 시작');
+  loadingAnimation.classList.remove('spin'); // 로딩 애니메이션 제거
+  loadingAnimation.classList.add('success'); // 체크 표시 추가
+
+  // Python 프로세스 종료 요청
+  window.electronAPI.stopAntispoofing();
+
+  // 추가 프레임 캡처 및 순수 임베딩 생성 요청
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+
+      video.addEventListener('loadeddata', async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL('image/png');
+        video.pause();
+        stream.getTracks().forEach(track => track.stop()); // 스트림 종료
+
+        // Python 스크립트로 임베딩 요청
+        window.electronAPI.sendEmbeddingRequest(imageData);
+
+        window.electronAPI.onEmbeddingResult((embedding) => {
+          console.log('추가 캡처된 임베딩 저장:', embedding);
+          window.electronAPI.saveEmbedding(embedding); // 전역 변수에 저장
+          nextButton.disabled = false; // 버튼 활성화
+        });
+      });
+    })
+    .catch((error) => {
+      console.error('추가 프레임 캡처 실패:', error);
+    });
+
       }
     } else {
       realCount = 0; // Real이 아닌 경우 카운트 초기화

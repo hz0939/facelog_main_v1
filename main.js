@@ -168,36 +168,9 @@ function safeLoadFile(filePath) {
 app.whenReady().then(() => {
   createWindow();
 
-  // Python 파일 실행
-  const pythonScriptPath = path.join(__dirname, 'FFT_test_6channel_d.py');
-  pythonProcess = spawn('python', [pythonScriptPath]);
+  });
+  
 
-  pythonProcess.stdout.on('data', (data) => {
-    const result = data.toString().trim();
-    console.log(`Python Output (Raw): ${result}`); // 터미널에 데이터 출력 확인
-  
-    try {
-      const parsedResult = JSON.parse(result); // JSON으로 파싱
-      console.log('result:', parsedResult);
-  
-      // 렌더러 프로세스로 데이터 전송
-      BrowserWindow.getAllWindows().forEach((window) => {
-        window.webContents.send('update-result', parsedResult);
-      });
-    } catch (error) {
-      console.error('JSON 파싱 오류:', error);
-      console.log('원본 데이터:', result); // 원본 데이터 출력
-    }
-  });
-  pythonProcess.stderr.on('data', (data) => {
-    console.error(`Python Error: ${data.toString()}`);
-  });
-  
-  pythonProcess.on('close', (code) => {
-    console.log(`Python Process Closed: ${code}`);
-  });
-  });
-  
   app.on('window-all-closed', () => {
   if (pythonProcess) pythonProcess.kill();
   if (process.platform !== 'darwin') app.quit();
@@ -285,7 +258,7 @@ ipcMain.on('send-embedding-request', async (event, imageData) => {
 
 
 
-
+//main.js의 process-face-embedding
 ipcMain.on('process-face-embedding', (event, { imageData }) => {
   const tempImagePath = path.join(__dirname, 'temp_image_data.txt');
   const pythonScriptPath = path.join(__dirname, 'facenet_embedding.py');
@@ -313,16 +286,25 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
         return;
       }
 
-      // stdout 결과 파싱 후, 한 번만 전송
+      // stdout 결과 파싱 후, NaN 값을 제거하고 한 번만 전송
       const embeddingArray = stdout
         .trim()
         .replace(/tensor\(|\)|\s+/g, '')
         .split(',')
-        .map(Number);
+        .map(Number)
+        .map(value => isNaN(value) ? 0 : value); // NaN 값을 0으로 대체
+
+        console.log("stdout 결과:", stdout);
+        console.log("embeddingArray 변환 전:", stdout.trim().replace(/tensor\(|\)|\s+/g, '').split(','));
+        console.log("embeddingArray 최종:", embeddingArray);
+
+
       event.sender.send('face-embedding-result', JSON.stringify(embeddingArray));
     });
   });
 });
+
+
 
 
 // 회원가입 처리
@@ -336,6 +318,20 @@ ipcMain.on('sign-up', async (event, { email, password }) => {
     event.sender.send('sign-up-failed', error.message);
   }
 });
+
+
+ipcMain.on('save-embedding', (event, embedding) => {
+  console.log('저장된 임베딩 값:', embedding);
+  lastEmbedding = embedding; // 전역 변수에 저장
+});
+
+
+
+
+
+
+
+
 
 // get-auth-user 핸들러 수정
 ipcMain.handle('get-auth-user', async () => {

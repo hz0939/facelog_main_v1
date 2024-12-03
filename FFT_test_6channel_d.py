@@ -1,3 +1,5 @@
+
+#FFT_test_6channel_d.py
 from flask import Flask, Response
 import sys
 import torch
@@ -117,33 +119,32 @@ while True:
             face_image = rgb_frame[y1:y2, x1:x2]
             face_pil = Image.fromarray(face_image)
 
+            # 얼굴 이미지 텐서로 변환
             face_tensor = transform(face_pil).unsqueeze(0).to(device)
 
-
-#lastEmbedding
             with torch.no_grad():
-                # 얼굴 임베딩 생성
-                embedding = embedding_model(face_tensor)  # 정의된 embedding_model 사용
+                # **Facenet 기반 임베딩 생성**
+                embedding = embedding_model(face_tensor)  # FaceNet 임베딩 생성
                 embedding_np = embedding.cpu().numpy()  # NumPy 배열로 변환
+                clean_embedding = np.nan_to_num(embedding_np[0])  # NaN 값을 0으로 대체pro
 
-                # Spoof detection 모델 처리
+                # **Spoof Detection 모델 처리**
                 fft_face = fft_transform(face_tensor)  # FFT 변환
-                outputs = model(face_tensor, fft_face)
+                outputs = embedding_model(face_tensor)  # 기존 모델 출력 (안티스푸핑)
                 probabilities = torch.softmax(outputs, dim=1)
                 real_prob = probabilities[0][0].item()
                 fake_prob = probabilities[0][1].item()
                 label = 'Real' if real_prob > fake_prob else 'Fake'
 
-                # JSON 형식으로 결과 생성
+                # JSON 결과 출력
                 result = {
                     "label": label,
                     "real_prob": real_prob,
                     "fake_prob": fake_prob,
-                    "embedding_preview": embedding_np[0][:10].tolist(),  # 임베딩 첫 10개 값만 출력
-                    "embedding": embedding_np[0].tolist()  # 전체 임베딩 데이터를 포함
+                    "embedding_preview": clean_embedding[:10].tolist(),  # 임베딩 첫 10개 값만 출력
+                    "embedding": clean_embedding.tolist()  # 전체 임베딩 데이터 포함
                 }
 
-                # JSON으로 출력
                 print(json.dumps(result))
                 sys.stdout.flush()
 
