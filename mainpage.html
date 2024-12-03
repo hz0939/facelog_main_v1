@@ -7,18 +7,21 @@
   <title>Main Page</title>
 </head>
 <body>
-  <header>
-    <h1>look&lock</h1>
-    <img id="logo" src="img/looknlock-logo.png" alt="Logo">
+  <div class="top-right-buttons">
     <button id="logOutButton">Log Out</button>
     <button id="deleteAccountButton">회원탈퇴</button>
-  </header>
-
+  </div>
+  <div class="center-container">
+    <img src="./looknlock-logo.png" alt="logo icon" class="logo-icon">
+    <h1>look & lock</h1>
+  </div>
   <main>
-    <div id="data-display"></div>
     <button id="addButton">Add New Site</button>
-    <input type="text" id="url-input" placeholder="Enter URL" />
-    <button id="go-button">Go</button>
+    <div class="url-container">
+      <input type="text" id="url-input" placeholder="Enter URL">
+      <button id="go-button">Go</button>
+    </div>
+    <div id="data-display"></div> <!-- 여기에 사이트 데이터가 표시됨 -->
     <video id="webcam-video"></video>
     <div id="toast" class="toast"></div>
 
