@@ -362,7 +362,7 @@ function startPeriodicVerification() {
     await startWebcam();
     await loadUserSites(localStorage.getItem('userEmail'));
     // 주기적 얼굴 인증 비활성화
-  // startPeriodicVerification();
+   startPeriodicVerification();
   });
   
 

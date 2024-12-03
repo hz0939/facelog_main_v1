@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
   const spoofResultElement = document.getElementById('spoof-result');
   const loadingAnimation = document.getElementById('loading-animation');
@@ -5,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const userEmail = localStorage.getItem('userEmail'); // localStorage에서 이메일 가져오기
   let realCount = 0; // Real 카운트 변수
   let lastEmbedding = null; // 마지막 임베딩 값을 저장할 변수
+  let cameraStream = null; // 카메라 스트림 저장 변수
 
   // 이메일 확인
   if (!userEmail) {
@@ -20,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('페이지 초기화 중...');
     realCount = 0; // 카운트 초기화
     nextButton.disabled = true; // 버튼 비활성화
-    spoofResultElement.textContent = '로딩 중...'; // 초기 텍스트
+    spoofResultElement.textContent = '안티 스푸핑 탐지 중...'; // 초기 텍스트
     loadingAnimation.classList.add('spin'); // 로딩 애니메이션 활성화
     loadingAnimation.classList.remove('success'); // 체크 표시 제거
   };
@@ -49,7 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.label === 'Real') {
       realCount += 1;
       console.log(`Real 횟수: ${realCount}`);
-      spoofResultElement.textContent = `실제 얼굴 확인됨! (${realCount}/5)`;
+
+      // REAL 표시를 1초 지연
+      setTimeout(() => {
+        spoofResultElement.textContent = `REAL!`;
+      }, 2000); // 1초 지연
 
     // 전체 임베딩 데이터 저장
     if (result.embedding) {
@@ -63,8 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // Real이 5번 이상 감지되면
 if (realCount >= 5) {
   console.log('Real 결과 5번 도달, 추가 프레임 캡처 시작');
-  loadingAnimation.classList.remove('spin'); // 로딩 애니메이션 제거
-  loadingAnimation.classList.add('success'); // 체크 표시 추가
+
+
+   // 로딩 애니메이션을 1.5초 동안 유지
+   setTimeout(() => {
+    loadingAnimation.classList.remove('spin'); // 로딩 애니메이션 제거
+    loadingAnimation.classList.add('success'); // 체크 표시 추가
+  }, 1500); // 1.5초 대기
 
   // Python 프로세스 종료 요청
   window.electronAPI.stopAntispoofing();
@@ -93,7 +104,7 @@ if (realCount >= 5) {
         window.electronAPI.onEmbeddingResult((embedding) => {
           console.log('추가 캡처된 임베딩 저장:', embedding);
           window.electronAPI.saveEmbedding(embedding); // 전역 변수에 저장
-          nextButton.disabled = false; // 버튼 활성화
+          window.location.href = 'login_face.html'; // 다음 페이지로 자동 전환
         });
       });
     })
