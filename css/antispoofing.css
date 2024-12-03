@@ -1,4 +1,4 @@
-/* ÀüÃ¼ ÆäÀÌÁö ½ºÅ¸ÀÏ */
+/* ì „ì²´ í˜ì´ì§€ ìŠ¤íƒ€ì¼ */
 body {
     display: flex;
     flex-direction: column;
@@ -10,7 +10,7 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* Çì´õ ½ºÅ¸ÀÏ */
+/* í—¤ë” ìŠ¤íƒ€ì¼ */
 header h1 {
     font-size: 1.8rem;
     font-weight: bold;
@@ -18,7 +18,7 @@ header h1 {
     margin-bottom: 30px;
   }
 
-  /* ¿ŞÂÊ »ó´Ü ·Î°í */
+  /* ì™¼ìª½ ìƒë‹¨ ë¡œê³  */
   .left-logo {
     position: absolute;
     top: 20px;
@@ -61,7 +61,7 @@ header h1 {
     border: none;
     width: 40px;
     height: 40px;
-    background-color: #4caf50; /* ÃÊ·Ï»ö ¹è°æ */
+    background-color: #4caf50; /* ì´ˆë¡ìƒ‰ ë°°ê²½ */
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -69,7 +69,7 @@ header h1 {
   }
 
   .loading-animation.success::before {
-    content: "?"; /* Ã¼Å© Ç¥½Ã Ãß°¡ */
+    content: "âœ”"; /* ì²´í¬ í‘œì‹œ ì¶”ê°€ */
     color: white;
     font-size: 30px;
     font-weight: bold;
@@ -83,17 +83,17 @@ header h1 {
     color: white;
     border: none;
     border-radius: 5px;
-    background-color: #ccc; /* ÃÊ±â È¸»ö ¹öÆ° */
+    background-color: #ccc; /* ì´ˆê¸° íšŒìƒ‰ ë²„íŠ¼ */
     cursor: not-allowed;
     transition: background-color 0.3s ease;
   }
 
   button:enabled {
     cursor: pointer;
-    background-color: #e74c3c; /* È°¼ºÈ­ ½Ã »¡°£ ¹öÆ° */
+    background-color: #e74c3c; /* í™œì„±í™” ì‹œ ë¹¨ê°„ ë²„íŠ¼ */
   }
 
-  /* ·Îµù ¾Ö´Ï¸ŞÀÌ¼Ç */
+  /* ë¡œë”© ì• ë‹ˆë©”ì´ì…˜ */
   @keyframes spin {
     0% {
       transform: rotate(0deg);
