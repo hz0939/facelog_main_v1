@@ -180,13 +180,32 @@ removeAllListeners: (channel) => {
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("페이지 로드 완료 및 MutationObserver 설정");
 
+    // 현재 페이지 경로 확인
+    const currentPath = window.location.pathname;
+
+    // 특정 페이지에서는 get-user-email 호출 방지
+    const excludedPaths = ["/index.html", "/signup_credentials.html", "/signup_face.html"];
+    if (excludedPaths.includes(currentPath)) {
+      console.log(`현재 페이지(${currentPath})에서는 get-user-email 호출을 건너뜁니다.`);
+      return;
+    }
+
+  // 회원가입 중이므로 localStorage 확인
+  const storedEmail = localStorage.getItem('userEmail');
+  if (storedEmail) {
+    console.log("이미 저장된 이메일:", storedEmail);
+    return;
+  }
+
   try {
+    // 로그인 상태 확인
     const userEmail = await ipcRenderer.invoke('get-user-email');
     console.log("ipcRenderer로 가져온 이메일:", userEmail);
+
     if (userEmail) {
       localStorage.setItem('userEmail', userEmail);
     } else {
-      console.warn("사용자가 로그인되어 있지 않거나 이메일을 가져올 수 없습니다.");
+      console.log("사용자가 로그인하지 않은 상태입니다. (회원가입 진행 중일 수 있음)");
     }
   } catch (error) {
     console.error("이메일 가져오기 실패:", error);

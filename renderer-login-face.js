@@ -82,7 +82,7 @@ window.onload = () => {
         // 최종 조건 확인
         if (similarityToStored > 0.75 && similarityToLast > 0.75) {
           console.log('로그인 성공. 메인 페이지로 이동합니다.');
-          //window.location.href = 'mainpage.html';
+          window.location.href = 'mainpage.html';
         } else {
           alert('얼굴이 일치하지 않습니다.');
         }

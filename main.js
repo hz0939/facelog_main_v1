@@ -412,6 +412,14 @@ ipcMain.on('logout', async (event) => {
       console.log("Python 프로세스 종료됨");
     }
 
+    BrowserWindow.getAllWindows().forEach((window) => {
+      window.webContents.executeJavaScript(`
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('tempEmail');
+        localStorage.removeItem('tempPassword');
+      `);
+    });
+    
     console.log('로그아웃 성공');
     event.sender.send('logout-success');
   } catch (error) {

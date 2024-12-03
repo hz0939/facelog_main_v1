@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then((stream) => {
       console.log("웹캠 스트림 시작");
       video.srcObject = stream;
-      video.style.transform = 'scaleX(-1)';
+      video.style.transform = 'scaleX(-1)';  
       video.play();
     })
     .catch((error) => {
@@ -26,46 +26,33 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.sendEmbeddingRequest(imageData);
   });
 
-  console.log('onEmbeddingResult 메서드 호출 준비 완료');
 
+
+  console.log('onEmbeddingResult 메서드 호출 준비 완료');
+  
   window.electronAPI.onEmbeddingResult(async (faceEmbedding) => {
     console.log('임베딩 결과:', faceEmbedding);
 
-    // 로컬 스토리지에서 임시 저장된 데이터 복호화
-    const encryptedEmail = localStorage.getItem('tempEmail');
-    const encryptedPassword = localStorage.getItem('tempPassword');
+    // 현재 로그인된 사용자 정보 가져오기
+    const user = await window.electronAPI.getAuthUser(); 
 
-    const email = await window.cryptoAPI.decryptData(encryptedEmail);
-    const password = await window.cryptoAPI.decryptData(encryptedPassword);
-
-    if (email && password) {
+    if (user) {
       try {
-        // Firebase Authentication에 사용자 생성
-        await window.electronAPI.sendSignUpRequest({ email, password });
-
-        // Firestore에 얼굴 임베딩 저장
+        // Firestore에 사용자 임베딩 저장
         await window.electronAPI.saveUserEmbedding({
-          email: email,
-          faceEmbedding: faceEmbedding,
+          email: user.email,
+          faceEmbedding: faceEmbedding  // 필요한 형식으로 변환
         });
-
-        console.log('회원가입 완료 및 얼굴 임베딩 저장');
-
-        // **회원가입 성공 시 임시 데이터 삭제**
-        localStorage.removeItem('tempEmail');
-        localStorage.removeItem('tempPassword');
-        console.log('임시 데이터 삭제 완료');
-
-        // 메인 페이지로 이동
-        window.location.href = 'index.html';
+        console.log('얼굴 임베딩이 저장되었습니다.');
+        window.location.href = 'index.html';  // 메인 페이지로 이동
       } catch (error) {
-        console.error("회원가입 또는 임베딩 저장 실패:", error);
+        console.error("임베딩 저장 실패:", error);
       }
     } else {
-      console.error('임시 저장된 이메일 또는 비밀번호가 없습니다.');
+      console.error("로그인된 사용자가 없습니다.");
     }
   });
 });
 
 
-
+ 
