@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="./css/mainpage.css">
   <title>Main Page</title>
 </head>
 <body>
-  <header>
-    <h1>look&lock</h1>
+  <div class="top-right-buttons">
     <button id="logOutButton">Log Out</button>
     <button id="deleteAccountButton">회원탈퇴</button>
-  </header>
-
+  </div>
+  <div class="center-container">
+    <img src="./looknlock-logo.png" alt="logo icon" class="logo-icon">
+    <h1>look & lock</h1>
+  </div>
   <main>
+    <button id="addButton">+</button> <!-- 다른 페이지로 이동 -->
+    <div class="url-container">
+      <input type="text" id="url-input" placeholder="Enter URL">
+      <button id="go-button">Go</button>
+    </div>
     <div id="data-display"></div> <!-- 여기에 사이트 데이터가 표시됨 -->
-    <button id="addButton">Add New Site</button> <!-- 다른 페이지로 이동 -->
-    <input type="text" id="url-input" placeholder="Enter URL" />
-    <button id="go-button">Go</button>
 
   </main>
 
