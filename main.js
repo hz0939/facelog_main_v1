@@ -185,7 +185,7 @@ function closeWindow(window) {
 
 
 ipcMain.on('start-antispoofing', () => {
-  const pythonScriptPath = path.join(__dirname, 'FFT_test_6channel_d.py');
+  
 
   // 기존 Python 프로세스 종료
   if (pythonProcess) {
@@ -194,7 +194,17 @@ ipcMain.on('start-antispoofing', () => {
   }
 
   // 새로운 Python 프로세스 시작
-  pythonProcess = spawn('python', [pythonScriptPath]);
+  const pythonExecutablePath = 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\python.exe'; // Python 설치 경로
+  const pythonScriptPath = 'FFT_test_6channel_d.py'; // 실행할 스크립트 경로
+
+  pythonProcess = spawn(pythonExecutablePath, [pythonScriptPath], {
+    env: {
+        ...process.env,
+        PATH: 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\Scripts;' + process.env.PATH, // 세미콜론 사용
+        PYTHONPATH: 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages', // site-packages 경로
+    },
+});
+
 
   pythonProcess.stdout.on('data', (data) => {
     const result = data.toString().trim();
