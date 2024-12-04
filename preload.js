@@ -7,8 +7,6 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
   decryptData: (text) => ipcRenderer.invoke('decrypt-data', text),
 });
 
-const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]'];
-const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]'];
 
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -184,11 +182,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     const currentPath = window.location.pathname;
 
     // 특정 페이지에서는 get-user-email 호출 방지
-    const excludedPaths = ["/index.html", "/signup_credentials.html", "/signup_face.html"];
-    if (excludedPaths.includes(currentPath)) {
-      console.log(`현재 페이지(${currentPath})에서는 get-user-email 호출을 건너뜁니다.`);
-      return;
-    }
+    //const excludedPaths = ["/index.html", "/signup_credentials.html", "/signup_face.html"];
+    //if (excludedPaths.includes(currentPath)) {
+     // console.log(`현재 페이지(${currentPath})에서는 get-user-email 호출을 건너뜁니다.`);
+      //return;
+    //}
 
   // 회원가입 중이므로 localStorage 확인
   const storedEmail = localStorage.getItem('userEmail');

@@ -57,7 +57,7 @@ window.onload = () => {
       const similarity = calculateCosineSimilarity(newEmbeddingArray, storedEmbedding);
       console.log("계산된 유사도:", similarity);
 
-      if (!isNaN(similarity) && similarity > 0.75) {
+      if (!isNaN(similarity) && similarity > 0.7) {
         await window.electronAPI.deleteUserDoc(userEmail);
         await window.electronAPI.deleteAuthUser();
         alert('계정이 삭제되었습니다.');

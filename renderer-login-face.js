@@ -62,7 +62,7 @@ window.onload = () => {
         const similarityToStored = calculateCosineSimilarity(newEmbeddingArray, storedEmbedding);
         console.log('storedEmbedding과 유사도:', similarityToStored);
 
-        if (similarityToStored <= 0.75) {
+        if (similarityToStored <= 0.7) {
           alert('얼굴이 일치하지 않습니다.');
           return;
         }
@@ -80,7 +80,7 @@ window.onload = () => {
         console.log('lastEmbedding과 유사도:', similarityToLast);
 
         // 최종 조건 확인
-        if (similarityToStored > 0.75 && similarityToLast > 0.75) {
+        if (similarityToStored > 0.7 && similarityToLast > 0.7) {
           console.log('로그인 성공. 메인 페이지로 이동합니다.');
           window.location.href = 'mainpage.html';
         } else {

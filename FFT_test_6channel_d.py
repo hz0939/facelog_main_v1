@@ -126,16 +126,16 @@ while True:
                 # **Facenet 기반 임베딩 생성**
                 embedding = embedding_model(face_tensor)  # FaceNet 임베딩 생성
                 embedding_np = embedding.cpu().numpy()  # NumPy 배열로 변환
-                clean_embedding = np.nan_to_num(embedding_np[0])  # NaN 값을 0으로 대체pro
+                clean_embedding = np.nan_to_num(embedding_np[0])  # NaN 값을 0으로 대체
 
                 # **Spoof Detection 모델 처리**
                 fft_face = fft_transform(face_tensor)  # FFT 변환
-                outputs = embedding_model(face_tensor)  # 기존 모델 출력 (안티스푸핑)
+                outputs = model(face_tensor, fft_face)  # CDCN_Spatial_Frequency 모델 사용
                 probabilities = torch.softmax(outputs, dim=1)
                 real_prob = probabilities[0][0].item()
                 fake_prob = probabilities[0][1].item()
                 label = 'Real' if real_prob > fake_prob else 'Fake'
-
+            
                 # JSON 결과 출력
                 result = {
                     "label": label,

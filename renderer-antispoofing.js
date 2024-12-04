@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('페이지 초기화 중...');
     realCount = 0; // 카운트 초기화
     nextButton.disabled = true; // 버튼 비활성화
-    spoofResultElement.textContent = '안티 스푸핑 탐지 중...'; // 초기 텍스트
+    spoofResultElement.textContent = '페이스 스푸핑 탐지 중...'; // 초기 텍스트
     loadingAnimation.classList.add('spin'); // 로딩 애니메이션 활성화
     loadingAnimation.classList.remove('success'); // 체크 표시 제거
   };
