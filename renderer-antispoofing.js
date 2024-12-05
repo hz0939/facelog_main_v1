@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const spoofResultElement = document.getElementById('spoof-result');
   const loadingAnimation = document.getElementById('loading-animation');
-  const nextButton = document.getElementById('nextButton');
+ 
   const userEmail = localStorage.getItem('userEmail'); // localStorage에서 이메일 가져오기
   let realCount = 0; // Real 카운트 변수
   let lastEmbedding = null; // 마지막 임베딩 값을 저장할 변수
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('페이지 초기화 중...');
     realCount = 0; // 카운트 초기화
     fakeCount = 0; // Fake 카운트 초기화
-    nextButton.disabled = true; // 버튼 비활성화
+ 
     spoofResultElement.textContent = '안티 스푸핑 탐지 중...'; // 초기 텍스트
     loadingAnimation.classList.add('spin'); // 로딩 애니메이션 활성화
     loadingAnimation.classList.remove('success'); // 체크 표시 제거
@@ -46,7 +46,7 @@ window.electronAPI.onUpdateResult((result) => {
   // 결과가 없거나 부적절한 경우 처리
   if (!result || !result.label) {
     spoofResultElement.textContent = '결과 데이터를 가져올 수 없습니다.';
-    nextButton.disabled = true; // 버튼 비활성화
+    
     return;
   }
 
@@ -110,8 +110,8 @@ window.electronAPI.onUpdateResult((result) => {
     console.log(`Fake 횟수: ${fakeCount}`);
 
     // Fake가 10번 연속 감지되면 Fake 처리
-    if (fakeCount >= 10) {
-      console.log('Fake 결과 10번 연속 감지, 실패 처리 시작');
+    if (fakeCount >= 5) {
+      console.log('Fake 결과 5번 연속 감지, 실패 처리 시작');
       setTimeout(() => {
         spoofResultElement.textContent = 'FAKE!';
         loadingAnimation.classList.remove('spin'); // 로딩 애니메이션 제거
@@ -132,9 +132,5 @@ window.electronAPI.onUpdateResult((result) => {
   }
 });
 
-// 버튼 클릭 시 login_face.html로 이동
-nextButton.addEventListener('click', () => {
-  console.log('다음 페이지로 이동 요청');
-  window.electronAPI.navigateToLoginFace(); // login_face.html로 이동 요청
-});
+
 });

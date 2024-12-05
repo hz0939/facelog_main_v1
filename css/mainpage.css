@@ -145,6 +145,12 @@ main {
   margin-top: 20px;
 }
 
+.site-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .site-icon {
   width: 50px;
   height: 50px;
@@ -163,17 +169,13 @@ main {
   flex-direction: column; /* 세로 방향으로 정렬 */
   align-items: center;    /* 중앙 정렬 */
   justify-content: center; /* 수직 중앙 정렬 */
-  position: relative;
 }
 
 .site-icon-img {
-  position: absolute;
-  top: -10%; /* 이미지의 위치를 조정하여 중앙에 맞춤 */
-  left: -10%; /* 이미지를 부모 크기에 비례해 확장 */
-  width: 200%;
-  height: 200%;
-  object-fit: contain; /* 아이콘을 원 안에 꽉 차게 표시 */
-  object-position: center; /* 이미지를 부모의 중심에 맞춤 */
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .site-title {
@@ -182,8 +184,6 @@ main {
   margin-top: 10px;
   color: #333;
   text-align: center; /* 타이틀을 중앙 정렬 */
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .site-entry:hover {
@@ -233,27 +233,26 @@ main {
   background-color: #f0f0f0;
 }
 
-  /* 플로팅 추가 버튼 */
-  #addButton {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 24px;
-    text-align: center;
-    line-height: 60px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-  }
-  
-  #addButton:hover {
-    background-color: #2c5bbf;
-    transform: scale(1.1);
-  }
-  
+/* 플로팅 추가 버튼 */
+#addButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  text-align: center;
+  line-height: 60px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+#addButton:hover {
+  background-color: #2c5bbf;
+  transform: scale(1.1);
+}

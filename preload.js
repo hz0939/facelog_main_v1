@@ -1,4 +1,4 @@
-//preload.js 암호화 작동이 잘 안 됨
+//preload.js 
 console.log("preload.js 로드됨");
 const { contextBridge, ipcRenderer } = require('electron');
 
@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('cryptoAPI', {
   decryptData: (text) => ipcRenderer.invoke('decrypt-data', text),
 });
 
+const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[name="userid"]', 'input[name="usr_id"]', 'input[name="userId"]', 'input[type="text"]', 'input#id'];
+const passwordSelectors = ['input[name="password"]', 'input[name="pw"]', 'input[name="userpw"]', 'input[name="usr_pw"]', 'input[name="userPass"]', 'input[type="password"]', 'input#pw'];
 
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -175,38 +177,31 @@ removeAllListeners: (channel) => {
 });
 
 
+
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("페이지 로드 완료 및 MutationObserver 설정");
 
-    // 현재 페이지 경로 확인
-    const currentPath = window.location.pathname;
+  // 현재 페이지 경로 확인
+  const currentPath = window.location.pathname;
 
-    // 특정 페이지에서는 get-user-email 호출 방지
-    //const excludedPaths = ["/index.html", "/signup_credentials.html", "/signup_face.html"];
-    //if (excludedPaths.includes(currentPath)) {
-     // console.log(`현재 페이지(${currentPath})에서는 get-user-email 호출을 건너뜁니다.`);
-      //return;
-    //}
+  // 특정 페이지에서는 get-user-email 호출 방지
+  const excludedPaths = ["/index.html", "/signup_credentials.html", "/signup_face.html"];
+  if (!excludedPaths.includes(currentPath)) {
+    try {
+      // 로그인 상태 확인
+      const userEmail = await ipcRenderer.invoke('get-user-email');
+      console.log("ipcRenderer로 가져온 이메일:", userEmail);
 
-  // 회원가입 중이므로 localStorage 확인
-  const storedEmail = localStorage.getItem('userEmail');
-  if (storedEmail) {
-    console.log("이미 저장된 이메일:", storedEmail);
-    return;
-  }
-
-  try {
-    // 로그인 상태 확인
-    const userEmail = await ipcRenderer.invoke('get-user-email');
-    console.log("ipcRenderer로 가져온 이메일:", userEmail);
-
-    if (userEmail) {
-      localStorage.setItem('userEmail', userEmail);
-    } else {
-      console.log("사용자가 로그인하지 않은 상태입니다. (회원가입 진행 중일 수 있음)");
+      if (userEmail) {
+        localStorage.setItem('userEmail', userEmail);
+      } else {
+        console.log("사용자가 로그인하지 않은 상태입니다. (회원가입 진행 중일 수 있음)");
+      }
+    } catch (error) {
+      console.error("이메일 가져오기 실패:", error);
     }
-  } catch (error) {
-    console.error("이메일 가져오기 실패:", error);
+  } else {
+    console.log(`현재 페이지(${currentPath})에서는 get-user-email 호출을 건너뜁니다.`);
   }
 
   // ID와 비밀번호 필드 탐색 셀렉터 설정

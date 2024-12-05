@@ -59,8 +59,8 @@ header h1 {
 
 #loading-animation.success {
   animation: none; /* 회전 애니메이션 제거 */
-  width: 100px; /* 원하는 크기로 설정 */
-  height: 100px;
+  width: 200px; /* 원하는 크기로 설정 */
+  height: 200px;
   background-image: url("../img/looknlock-good.png"); /* 체크 이미지 경로 */
   background-size: contain; /* 이미지 크기에 맞게 조정 */
   background-repeat: no-repeat; /* 이미지 반복 방지 */
@@ -70,8 +70,8 @@ header h1 {
 
 #loading-animation.fake {
   animation: none; /* 애니메이션 제거 */
-  width: 100px; /* 이미지 크기 */
-  height: 100px;
+  width: 200px; /* 이미지 크기 */
+  height: 200px;
   background-image: url("../img/looknlock-bad.png"); /* Fake 이미지 경로 */
   background-size: contain; /* 이미지 크기에 맞게 조정 */
   background-repeat: no-repeat; /* 이미지 반복 방지 */
@@ -82,22 +82,7 @@ header h1 {
 
 
 
-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  background-color: #ccc; /* 초기 회색 버튼 */
-  cursor: not-allowed;
-  transition: background-color 0.3s ease;
-}
 
-button:enabled {
-  cursor: pointer;
-  background-color: #e74c3c; /* 활성화 시 빨간 버튼 */
-}
 
 /* 로딩 애니메이션 */
 @keyframes spin {

@@ -100,8 +100,6 @@ if not cap.isOpened():
     print("웹캠을 열 수 없습니다.", file=sys.stderr)
     sys.exit(1)
 
-# InceptionResnetV1 모델 초기화
-embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
 
 
 while True:
@@ -119,18 +117,15 @@ while True:
             face_image = rgb_frame[y1:y2, x1:x2]
             face_pil = Image.fromarray(face_image)
 
-            # 얼굴 이미지 텐서로 변환
+            # 얼굴 이미지 전처리 및 FFT 변환
             face_tensor = transform(face_pil).unsqueeze(0).to(device)
-
+            face_freq = fft_transform(face_tensor)  # 주파수 변환 적용
+            
             with torch.no_grad():
-                # **Facenet 기반 임베딩 생성**
-                embedding = embedding_model(face_tensor)  # FaceNet 임베딩 생성
-                embedding_np = embedding.cpu().numpy()  # NumPy 배열로 변환
-                clean_embedding = np.nan_to_num(embedding_np[0])  # NaN 값을 0으로 대체
+                # **RGB와 FFT 데이터를 각각 모델에 전달**
+                outputs = model(face_tensor, face_freq)  # 기존 구조 유지
 
-                # **Spoof Detection 모델 처리**
-                fft_face = fft_transform(face_tensor)  # FFT 변환
-                outputs = model(face_tensor, fft_face)  # CDCN_Spatial_Frequency 모델 사용
+                # 소프트맥스 및 예측 확률 계산
                 probabilities = torch.softmax(outputs, dim=1)
                 real_prob = probabilities[0][0].item()
                 fake_prob = probabilities[0][1].item()
@@ -141,8 +136,6 @@ while True:
                     "label": label,
                     "real_prob": real_prob,
                     "fake_prob": fake_prob,
-                    "embedding_preview": clean_embedding[:10].tolist(),  # 임베딩 첫 10개 값만 출력
-                    "embedding": clean_embedding.tolist()  # 전체 임베딩 데이터 포함
                 }
 
                 print(json.dumps(result))

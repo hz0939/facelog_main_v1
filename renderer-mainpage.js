@@ -1,3 +1,4 @@
+
 let stream = null;
 let video = null;
 let userEmail = null;
@@ -108,18 +109,28 @@ function startFaceVerificationNotification() {
 }
 
 
-//site id와 비밀번호가 복호화 됨
+//site id와 비밀번호
 async function loadUserSites(userEmail) {
   const sites = await window.electronAPI.getUserSites(userEmail);
-
   if (sites.length > 0) {
     dataDisplay.innerHTML = sites.map(site => {
+      const fullTitle = site.title || 'Untitled';
+      const maxLength = 7; // 제목 길이 제한
+      const shortTitle = fullTitle.length > maxLength ? `${fullTitle.slice(0, maxLength)}...` : fullTitle;
+  
+      console.log("원본 제목:", fullTitle, " | 잘린 제목:", shortTitle);
+  
       return `
         <div class="site-entry">
-          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}">
-            <img src="${site.icon || 'default-icon.png'}" alt="${site.name}">
-            <p>${site.name}</p>
+          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}" data-doc-id="${site.id}">
+            <img class="site-icon-img" src="${site.icon || 'default-icon.png'}" alt="${fullTitle} icon">
+            <p class="site-title">${shortTitle}</p>
           </button>
+          <button class="more-options">...</button>
+          <div class="context-menu">
+            <button class="edit-button">바로가기 수정</button>
+            <button class="delete-button">삭제</button>
+          </div> 
         </div>
       `;
     }).join('');
@@ -376,4 +387,5 @@ window.electronAPI.on('refresh-main-page-to-renderer', async () => {
     console.log("메인 페이지가 새로고침되었습니다.");
   }
 });
+
 

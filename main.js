@@ -370,14 +370,14 @@ ipcMain.handle('save-user-embedding', async (event, { email, faceEmbedding }) =>
 if (!ipcMain.listeners('get-user-doc').length) {
   ipcMain.handle('get-user-doc', async (event, email) => {
     try {
-      console.log('user email found:', email); // 중복 호출 확인 로그
+      
       const userDocRef = doc(db, 'users', email);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
         return userDocSnap.data();
       } else {
-        console.error('User document not found:', email);
+        console.error('등록된 사용자가 없습니다.', email);
         return null;
       }
     } catch (error) {
