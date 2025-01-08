@@ -1,4 +1,4 @@
-
+//코드끼리합친거
 let stream = null;
 let video = null;
 let userEmail = null;
@@ -8,12 +8,11 @@ let isUserDocRequestInProgress = false;
 let isAlertShown = false;
 let dataDisplay = null;
 
+// 사용자 문서 가져오기
 async function fetchUserDoc(email) {
   if (isUserDocRequestInProgress) {
-    console.log('get-user-doc 요청이 이미 진행 중입니다.');
     return;
   }
-
   try {
     isUserDocRequestInProgress = true;
     const userDoc = await window.electronAPI.getUserDoc(email);
@@ -21,10 +20,10 @@ async function fetchUserDoc(email) {
     return userDoc;
   } catch (error) {
     isUserDocRequestInProgress = false;
-    console.error('fetchUserDoc 중 오류 발생:', error);
   }
 }
 
+// 웹캠 시작
 async function startWebcam() {
   if (!video) {
     video = document.createElement('video');
@@ -45,10 +44,10 @@ async function startWebcam() {
     video.style.transform = 'scaleX(-1)'; 
     await video.play();
   }
-
   video.style.display = 'block';
 }
 
+// 웹캠 정지
 function stopWebcam() {
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
@@ -59,8 +58,8 @@ function stopWebcam() {
   }
 }
 
+// 코사인 유사도 계산
 function cosSimilarity(embedding1, embedding2) {
-  // NaN 값을 0으로 대체
   const cleanedEmbedding1 = embedding1.map(value => isNaN(value) ? 0 : value);
   const cleanedEmbedding2 = embedding2.map(value => isNaN(value) ? 0 : value);
 
@@ -68,61 +67,92 @@ function cosSimilarity(embedding1, embedding2) {
   const norm1 = Math.sqrt(cleanedEmbedding1.reduce((sum, val) => sum + val * val, 0));
   const norm2 = Math.sqrt(cleanedEmbedding2.reduce((sum, val) => sum + val * val, 0));
 
-  // 유사도 계산 시 0으로 나누는 오류 방지
   if (norm1 === 0 || norm2 === 0) {
-    console.error("임베딩 벡터의 길이가 0입니다.");
     return 0;
   }
 
   return dotProduct / (norm1 * norm2);
 }
 
-function showToast(message) {
-  const toast = document.getElementById("toast");
+// Toast 메시지 표시
+function showToast(message, position = 'bottom') {
+  const toast = document.createElement('div');
   toast.textContent = message;
-  toast.className = "toast show";
+  toast.style.position = 'fixed';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+  toast.style.color = '#fff';
+  toast.style.padding = '10px 20px';
+  toast.style.borderRadius = '5px';
+  toast.style.fontSize = '14px';
+  toast.style.zIndex = '9999';
+  toast.style.transition = 'opacity 0.2s ease'; 
+  toast.style.opacity = '1';
 
-  // 3초 후에 자동으로 사라지도록 설정
+  if (position === 'bottom') {
+    toast.style.bottom = '20px';
+  } else if (position === 'middle') {
+    toast.style.bottom = '50%';
+  } else if (position === 'top') {
+    toast.style.top = '20px';
+  }
+
+  document.body.appendChild(toast);
+
   setTimeout(() => {
-    toast.className = "toast";
-  }, 3000);
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      toast.remove();
+    }, 200);
+  }, 1500);
 }
 
-
-function showSystemNotification(message) {
+// 얼굴 인증 시작 전에 알림
+function startFaceVerificationNotification() {
   const notification = new Notification("얼굴 인증 알림", {
-    body: message,
-    icon: "img/looknlock-logo.png", // 아이콘을 추가할 수 있습니다.
-    silent: true, // 소리 없이 표시
+    body: "얼굴 인증이 곧 시작됩니다. 준비해 주세요!",
+    icon: "img/looknlock-logo.png",
+    silent: true,
   });
 
-  // 알림 클릭 시의 동작 (선택 사항)
   notification.onclick = () => {
-    console.log("알림이 클릭되었습니다.");
   };
-}
-
-
-// 얼굴 인증 시작 전에 알림 표시
-function startFaceVerificationNotification() {
-  showSystemNotification("얼굴 인증이 곧 시작됩니다. 준비해 주세요!");
 }
 
 
 //site id와 비밀번호
 async function loadUserSites(userEmail) {
-  const sites = await window.electronAPI.getUserSites(userEmail);
-  if (sites.length > 0) {
+
+  if (!userEmail) {
+    console.error("유효하지 않은 userEmail:", userEmail);
+    return;
+  }
+
+  try {
+    const sites = await window.electronAPI.getUserSites(userEmail);
+
+
+    if (!sites || sites.length === 0) {
+      dataDisplay.innerHTML = "<p>등록된 사이트 정보가 없습니다.</p>";
+      return;
+    }
+
     dataDisplay.innerHTML = sites.map(site => {
       const fullTitle = site.title || 'Untitled';
       const maxLength = 7; // 제목 길이 제한
       const shortTitle = fullTitle.length > maxLength ? `${fullTitle.slice(0, maxLength)}...` : fullTitle;
-  
-      console.log("원본 제목:", fullTitle, " | 잘린 제목:", shortTitle);
-  
+
+
+
       return `
         <div class="site-entry">
-          <button class="site-icon" data-url="${site.url}" data-id="${site.id}" data-password="${site.password}" data-doc-id="${site.id}">
+          <button class="site-icon" 
+            data-url="${site.url}" 
+            data-id="${site.id}" 
+            data-password="${site.password}" 
+            data-is-encrypted="${site.isEncrypted}" 
+            data-doc-id="${site.id}">
             <img class="site-icon-img" src="${site.icon || 'default-icon.png'}" alt="${fullTitle} icon">
             <p class="site-title">${shortTitle}</p>
           </button>
@@ -130,34 +160,41 @@ async function loadUserSites(userEmail) {
           <div class="context-menu">
             <button class="edit-button">바로가기 수정</button>
             <button class="delete-button">삭제</button>
-          </div> 
+          </div>
         </div>
       `;
     }).join('');
 
 
+
     // 사이트 아이콘 클릭 시 복호화 및 자동 로그인
-    document.querySelectorAll('.site-icon').forEach(async (icon) => {
+    document.querySelectorAll('.site-icon').forEach(icon => {
       const encryptedID = icon.getAttribute('data-id');
       const encryptedPassword = icon.getAttribute('data-password');
+      const isEncrypted = icon.getAttribute('data-is-encrypted') === 'true';
 
-      try {
-        // 암호화된 ID와 비밀번호 복호화
-        const decryptedID = await window.cryptoAPI.decryptData(encryptedID);
-        const decryptedPassword = await window.cryptoAPI.decryptData(encryptedPassword);
+      icon.addEventListener('click', async () => {
+        const url = decodeURIComponent(icon.getAttribute('data-url'));
+        let id = encryptedID;
+        let password = encryptedPassword;
 
-        icon.addEventListener('click', () => {
-          const url = decodeURIComponent(icon.getAttribute('data-url'));
-          console.log(`자동 로그인 시도: URL=${url}, ID=${decryptedID}, Password=${decryptedPassword}`);
-          window.electronAPI.autoLogin(url, decryptedID, decryptedPassword);
-        });
-      } catch (error) {
-        console.error('복호화 오류:', error);
-        alert('복호화 중 오류가 발생했습니다. 다시 시도해 주세요.');
-      }
+        try {
+          // 암호화된 경우 복호화 수행
+          if (isEncrypted) {
+            id = await window.cryptoAPI.decryptData(encryptedID);
+            password = await window.cryptoAPI.decryptData(encryptedPassword);
+          }
+
+
+          await window.electronAPI.autoLogin(url, id, password);
+        } catch (error) {
+          console.error("자동 로그인 중 오류 발생:", error);
+        }
+      });
     });
-  } else {
-    dataDisplay.innerHTML = "<p>등록된 사이트 정보가 없습니다.</p>";
+  } catch (error) {
+    console.error("사이트 데이터를 가져오는 중 오류 발생:", error);
+    dataDisplay.innerHTML = "<p>사이트 데이터를 로드하는 데 실패했습니다.</p>";
   }
 }
 
@@ -189,8 +226,7 @@ async function loadUserSites(userEmail) {
   
         // URL을 한 번만 인코딩하여 Firestore의 문서 ID 형식과 일치시킴
         const docId = encodeURIComponent(siteUrl);
-        console.log("Firestore에서 삭제 요청할 한 번 인코딩된 문서 ID:", docId);
-  
+
         if (!docId) {
           alert("삭제할 문서 ID가 없습니다.");
           return;
@@ -201,7 +237,6 @@ async function loadUserSites(userEmail) {
           alert('사이트 정보가 Firestore에서 삭제되었습니다.');
           location.reload(); // 삭제 후 페이지 새로고침
         } catch (error) {
-          console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
           alert('사이트 삭제에 실패했습니다.');
         }
       });
@@ -212,10 +247,8 @@ async function loadUserSites(userEmail) {
       const urlInput = document.getElementById('url-input').value.trim();
       const url = urlInput.startsWith('http') ? urlInput : `https://${urlInput}`;
       if (url) {
-        console.log("URL 입력:", url);
         window.electronAPI.openUrlInNewWindow(url);
       } else {
-        console.error("URL 입력 값이 비어 있습니다.");
       }
     });
 
@@ -262,7 +295,6 @@ function startPeriodicVerification() {
       return;
     }
     startFaceVerificationNotification();{
-    console.log('performFaceVerification() 호출 시작');
     isVerifying = true;
     }
   
@@ -290,19 +322,15 @@ function startPeriodicVerification() {
   
       if (!isListenerRegistered) {
         window.electronAPI.onEmbeddingResult(async (newEmbedding) => {
-          console.log('onEmbeddingResult 내부의 임베딩 결과:', newEmbedding);
   
           const userDoc = await fetchUserDoc(userEmail);
   
           if (!userDoc || !userDoc.faceEmbedding) {
-            console.error("사용자 데이터에 faceEmbedding이 없습니다.");
             alert('얼굴 임베딩 데이터를 찾을 수 없습니다.');
             stopWebcam();
             isVerifying = false;
             return;
           }
-  
-          console.log('DB에서 가져온 사용자 얼굴 임베딩 데이터:', userDoc.faceEmbedding);
   
           const storedEmbedding = userDoc.faceEmbedding.split(',').map(Number);
           const newEmbeddingArray = newEmbedding.split(',').map(Number);
@@ -310,7 +338,7 @@ function startPeriodicVerification() {
           const similarity = cosSimilarity(newEmbeddingArray, storedEmbedding);
           console.log('코사인 유사도:', similarity);
   
-          if (similarity > 0.7) {
+          if (similarity > 0.6) {
             showToast('얼굴 인증 성공');
           } else {
             alert('얼굴 인증 실패. 자동 로그아웃을 수행합니다.');
@@ -326,7 +354,6 @@ function startPeriodicVerification() {
         isListenerRegistered = true;
       }
     } catch (error) {
-      console.error('performFaceVerification() 중 오류 발생:', error);
       isVerifying = false;
       stopWebcam();
     }
@@ -341,32 +368,26 @@ function startPeriodicVerification() {
 
   if (addButton) {
     addButton.addEventListener('click', () => {
-      console.log("Navigating to write page");
       window.electronAPI.navigateToWritePage();
     });
   } else {
-    console.error("addButton 요소를 찾을 수 없습니다.");
   }
   
   document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOMContentLoaded 이벤트 트리거");
+    
   
     // cryptoAPI 준비 상태 확인
     if (window.cryptoAPI && typeof window.cryptoAPI.decryptData === 'function') {
-      console.log("cryptoAPI 준비 완료");
   
       // 테스트 복호화 호출 (임의의 encryptedText 대신 실제 암호화된 텍스트를 넣어도 됨)
       const decryptedData = await window.cryptoAPI.decryptData("encryptedText");
-      console.log("복호화된 데이터:", decryptedData);
     } else {
-      console.error("cryptoAPI가 준비되지 않았습니다.");
       return;
     }
   
     dataDisplay = document.getElementById('data-display');
   
     if (!dataDisplay) {
-      console.error("dataDisplay 요소를 찾을 수 없습니다.");
       return;
     }
   
@@ -380,12 +401,8 @@ function startPeriodicVerification() {
 
 // 'refresh-main-page' 이벤트 수신 시 Firestore에서 최신 사이트 정보 불러오기
 window.electronAPI.on('refresh-main-page-to-renderer', async () => {
-  console.log("메인 페이지에서 'refresh-main-page-to-renderer' 이벤트 수신됨, Firestore에서 최신 데이터 불러오기");
   const userEmail = localStorage.getItem('userEmail');
   if (userEmail) {
     await loadUserSites(userEmail);
-    console.log("메인 페이지가 새로고침되었습니다.");
   }
 });
-
-

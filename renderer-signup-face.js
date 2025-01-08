@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 웹캠 스트림 시작
   navigator.mediaDevices.getUserMedia({ video: true })
     .then((stream) => {
-      console.log("웹캠 스트림 시작");
       video.srcObject = stream;
       video.style.transform = 'scaleX(-1)';  
       video.play();
@@ -27,8 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-
-  console.log('onEmbeddingResult 메서드 호출 준비 완료');
   
   window.electronAPI.onEmbeddingResult(async (faceEmbedding) => {
     console.log('임베딩 결과:', faceEmbedding);

@@ -58,14 +58,13 @@ class CDCN_Spatial_Frequency(nn.Module):
 # Flask 서버 초기화
 app = Flask(__name__)
 
-# 모델 로드
 model_path = 'FFT_V4.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CDCN_Spatial_Frequency().to(device)
 
-# 가중치 로드
+
 try:
-    model.load_state_dict(torch.load(model_path, map_location=device))  # map_location을 사용하여 CPU로 로드
+    model.load_state_dict(torch.load(model_path, map_location=device)) 
     print("모델 가중치가 성공적으로 로드되었습니다.")
 except Exception as e:
     print(f"모델 가중치 로드 실패: {e}")
@@ -73,34 +72,27 @@ except Exception as e:
 
 model.eval()
 
-# MTCNN 모델 초기화
 detector = MTCNN()
 
-# 이미지 전처리 함수
 transform = transforms.Compose([
     transforms.Resize((128, 128)),
     transforms.ToTensor(),
 ])
 
-# 주파수 변환 함수 (FFT)
-def fft_transform(image):
-    gray = image.mean(dim=1, keepdim=True)  # 그레이스케일로 변환
-    f = torch.fft.fft2(gray)  # 푸리에 변환
-    fshift = torch.fft.fftshift(f)  # 주파수 영역 중앙으로 이동
-    magnitude_spectrum = torch.abs(fshift)  # 크기 스펙트럼 반환
 
-    # 주파수 영역 정보가 1채널로 반환되므로, 3채널로 확장
-    magnitude_spectrum = magnitude_spectrum.repeat(1, 3, 1, 1)  # 3채널로 확장
+def fft_transform(image):
+    gray = image.mean(dim=1, keepdim=True)  
+    f = torch.fft.fft2(gray)  
+    fshift = torch.fft.fftshift(f) 
+    magnitude_spectrum = torch.abs(fshift) 
+    magnitude_spectrum = magnitude_spectrum.repeat(1, 3, 1, 1) 
     return magnitude_spectrum
 
-# 웹캠 캡처
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
     print("웹캠을 열 수 없습니다.", file=sys.stderr)
     sys.exit(1)
-
-
 
 while True:
     ret, frame = cap.read()
@@ -109,7 +101,7 @@ while True:
         break
 
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    boxes, _ = detector.detect(rgb_frame)  # 얼굴 검출
+    boxes, _ = detector.detect(rgb_frame)  
 
     if boxes is not None:
         for box in boxes:
@@ -117,29 +109,21 @@ while True:
             face_image = rgb_frame[y1:y2, x1:x2]
             face_pil = Image.fromarray(face_image)
 
-            # 얼굴 이미지 전처리 및 FFT 변환
             face_tensor = transform(face_pil).unsqueeze(0).to(device)
-            face_freq = fft_transform(face_tensor)  # 주파수 변환 적용
+            face_freq = fft_transform(face_tensor)  
             
             with torch.no_grad():
-                # **RGB와 FFT 데이터를 각각 모델에 전달**
-                outputs = model(face_tensor, face_freq)  # 기존 구조 유지
-
-                # 소프트맥스 및 예측 확률 계산
+                outputs = model(face_tensor, face_freq) 
                 probabilities = torch.softmax(outputs, dim=1)
                 real_prob = probabilities[0][0].item()
                 fake_prob = probabilities[0][1].item()
                 label = 'Real' if real_prob > fake_prob else 'Fake'
-            
-                # JSON 결과 출력
                 result = {
                     "label": label,
                     "real_prob": real_prob,
                     "fake_prob": fake_prob,
                 }
-
                 print(json.dumps(result))
                 sys.stdout.flush()
-
 cap.release()
 cv2.destroyAllWindows()

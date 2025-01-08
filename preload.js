@@ -1,5 +1,5 @@
 //preload.js 
-console.log("preload.js 로드됨");
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('cryptoAPI', {
@@ -32,22 +32,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   onUpdateResult: (callback) => {
     ipcRenderer.on('update-result', (event, result) => {
-      console.log('렌더러에서 결과 수신:', result); // 데이터 수신 확인
+     
       callback(result);
     });
   },
 
   startAntispoofing: () => {
-    console.log('startAntispoofing 호출됨');
     ipcRenderer.send('start-antispoofing');
   },
   stopAntispoofing: () => {
-    console.log('stopAntispoofing 호출됨');
     ipcRenderer.send('stop-antispoofing');
   },
   onAntispoofingResult: (callback) => {
     ipcRenderer.on('antispoofing-result', (event, result) => {
-      console.log('antispoofing-result 이벤트 수신:', result); // 데이터 수신 확인
       callback(result);
     });
   },
@@ -61,14 +58,12 @@ onEmbeddingResult: (callback) => {
 
   // 새로운 리스너 등록
   ipcRenderer.on('face-embedding-result', (event, data) => {
-      console.log("Embedding 결과 수신:", data);
       callback(data);
   });
 
 },
 
 removeAllListeners: (channel) => {
-  console.log(`모든 리스너 제거: ${channel}`);
   ipcRenderer.removeAllListeners(channel);
 },
 
@@ -77,11 +72,9 @@ removeAllListeners: (channel) => {
   startWebcam: async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      console.log("preload에서 MediaStream 반환됨:", stream);
       // streamId만 반환
       return { streamId: stream.id };
     } catch (error) {
-      console.error("웹캠 스트림 요청 중 오류:", error);
       throw error;
     }
   },
@@ -125,21 +118,21 @@ removeAllListeners: (channel) => {
   send: (channel) => ipcRenderer.send(channel),
 
   writeDataToDB: (collectionName, data) => {
-    console.log('writeDataToDB called:', collectionName, data);  // 전달되는 값 확인
+ 
     return ipcRenderer.invoke('write-data', { collectionName, data });
   },
 
   getDataFromDB: (collectionName) => {
-    console.log('Requesting data from collection:', collectionName);  // 전달된 컬렉션 이름 로그 확인
+ 
     return ipcRenderer.invoke('get-data', { collectionName });
   },
   autoLogin: (url, id, password) => {
-    console.log('자동 로그인 요청:', url, id, password);
+ 
     ipcRenderer.invoke('auto-login', { url, id, password });
   },
 
   getUserSites: (userEmail) => {
-    console.log("getUserSites 호출됨:", userEmail);
+   
     return ipcRenderer.invoke('get-user-sites', userEmail);
   },
   
@@ -166,7 +159,7 @@ removeAllListeners: (channel) => {
   
   // 사이트 데이터를 저장하는 메서드
   saveSiteData: (siteData) => {
-    console.log("saveSiteData 호출됨:", siteData);
+ 
     ipcRenderer.invoke('save-site-data', siteData);
   },
   getAuthUser: () => ipcRenderer.invoke('get-auth-user'),
@@ -179,7 +172,7 @@ removeAllListeners: (channel) => {
 
 
 window.addEventListener("DOMContentLoaded", async () => {
-  console.log("페이지 로드 완료 및 MutationObserver 설정");
+ 
 
   // 현재 페이지 경로 확인
   const currentPath = window.location.pathname;
@@ -190,18 +183,16 @@ window.addEventListener("DOMContentLoaded", async () => {
     try {
       // 로그인 상태 확인
       const userEmail = await ipcRenderer.invoke('get-user-email');
-      console.log("ipcRenderer로 가져온 이메일:", userEmail);
 
       if (userEmail) {
         localStorage.setItem('userEmail', userEmail);
       } else {
-        console.log("사용자가 로그인하지 않은 상태입니다. (회원가입 진행 중일 수 있음)");
       }
     } catch (error) {
-      console.error("이메일 가져오기 실패:", error);
+
     }
   } else {
-    console.log(`현재 페이지(${currentPath})에서는 get-user-email 호출을 건너뜁니다.`);
+    
   }
 
   // ID와 비밀번호 필드 탐색 셀렉터 설정
@@ -222,12 +213,13 @@ window.addEventListener("DOMContentLoaded", async () => {
         url: encodedUrl,
         email: cachedEmail,
         title,
-        icon
+        icon,
+        isEncrypted: false, // 암호화하지 않음
       };
-      console.log("Firestore에 저장 요청 전송 전:", siteData);
+      
       ipcRenderer.invoke('save-site-data', siteData);
     } else {
-      console.log("사용자가 로그인되어 있지 않거나 필드 값이 비어 있습니다.");
+      
     }
   }
 
@@ -239,7 +231,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const passwordField = document.querySelector(passwordSelectors.join(', '));
 
     if (idField && passwordField) {
-      console.log("ID와 비밀번호 입력 필드 감지됨");
+     
       passwordField.addEventListener('input', () => {
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
@@ -247,7 +239,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         }, 1000);
       });
     } else {
-      console.log("입력 필드가 감지되지 않음");
+   
     }
   }
 
@@ -259,20 +251,20 @@ window.addEventListener("DOMContentLoaded", async () => {
 ipcRenderer.on('disable-observer', () => {
   isAutoLoginInProgress = true;
   observer.disconnect();
-  console.log("MutationObserver 완전 비활성화됨");
+ 
 });
 
 ipcRenderer.on('enable-observer', () => {
   isAutoLoginInProgress = false;
   try {
     observer.observe(document.body, { childList: true, subtree: true });
-    console.log("MutationObserver 다시 활성화됨");
+   
   } catch (error) {
-    console.error("MutationObserver 활성화 중 오류 발생:", error);
+   
   }
 });
 
 ipcRenderer.on('refresh-main-page', () => {
-  console.log("preload.js에서 'refresh-main-page' 이벤트 수신");
+ 
   window.location.reload(); // 메인 페이지를 직접 새로고침
 });

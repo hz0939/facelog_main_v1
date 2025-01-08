@@ -1,6 +1,6 @@
 //main.js
-require('dotenv').config(); // .env 파일 로드
-const CryptoJS = require('crypto-js'); //암호화 복호화 모듈
+require('dotenv').config(); 
+const CryptoJS = require('crypto-js'); 
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
@@ -20,7 +20,7 @@ let lastEmbedding = null; // 전역 변수로 임베딩 값을 저장
 
 // IPC로 임베딩 값을 저장
 ipcMain.on('save-embedding', (event, embedding) => {
-  console.log("저장된 임베딩 값:", embedding);
+  
   lastEmbedding = embedding; // 임베딩 값을 전역 변수에 저장
 });
 
@@ -35,36 +35,27 @@ ipcMain.handle('get-embedding', async () => {
 
 
 
-
-// 암호화 함수
 ipcMain.handle('encrypt-data', (event, text) => {
   try {
     const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
     return encrypted;
-  } catch (error) {
-    console.error('암호화 오류:', error);
+  } catch (error) { 
     return null;
   }
 });
-
-// 복호화 함수
 ipcMain.handle('decrypt-data', (event, encryptedText) => {
   try {
-    if (!encryptedText || typeof encryptedText !== 'string') {
-      console.error('잘못된 입력 값:', encryptedText);
+    if (!encryptedText || typeof encryptedText !== 'string') {  
       return null;
     }
     const bytes = CryptoJS.AES.decrypt(encryptedText, SECRET_KEY);
     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
 
     if (!decrypted) {
-      console.error('복호화 실패: 결과가 비어 있습니다.');
       return null;
     }
-
     return decrypted;
   } catch (error) {
-    console.error('복호화 오류:', error);
     return null;
   }
 });
@@ -109,27 +100,23 @@ const db = getFirestore(firebaseApp);
 
 let loggedInUserEmail = null; // 로그인된 사용자의 이메일
 setPersistence(auth, browserSessionPersistence)
-  .then(() => console.log("세션 지속성을 SESSION으로 설정했습니다."))
-  .catch(error => console.error("세션 지속성 설정 중 오류:", error.message));
+  .then(() => console.log(""))
+  .catch(error => console.error(":", error.message));
 
 let userEmail = null;
 // Firebase 인증 상태 변경 시 사용자 이메일 업데이트
 onAuthStateChanged(auth, (user) => {
   if (user) {
     userEmail = user.email;
-    console.log('로그인 성공, 이메일:', userEmail);
+    
     BrowserWindow.getAllWindows().forEach(window => {
       window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${userEmail}')`);
     });
   } else {
     userEmail = null;
-    console.log('로그아웃됨');
+    
   }
-  //loggedInUserEmail = user ? user.email : null;
-  //BrowserWindow.getAllWindows().forEach(window => {
-  //window.webContents.send('auth-state-changed', { email: loggedInUserEmail });
-  //});
-  //console.log(`로그인 상태 변경: ${loggedInUserEmail ? '로그인됨' : '로그아웃됨'}`);
+
 });
 
 const { spawn } = require('child_process'); // spawn 함수를 가져옵니다.
@@ -160,7 +147,7 @@ function safeLoadFile(filePath) {
   if (win && !win.isDestroyed()) {
     win.loadFile(filePath);
   } else {
-    console.error(`Cannot load ${filePath}. Window does not exist or is destroyed.`);
+    
   }
 }
 
@@ -185,47 +172,35 @@ function closeWindow(window) {
 
 
 ipcMain.on('start-antispoofing', () => {
-  
-
-  // 기존 Python 프로세스 종료
   if (pythonProcess) {
     pythonProcess.kill();
-    console.log("기존 Python 프로세스 종료됨");
+  
   }
-
-  // 새로운 Python 프로세스 시작
-  const pythonExecutablePath = 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\python.exe'; // Python 설치 경로
-  const pythonScriptPath = 'FFT_test_6channel_d.py'; // 실행할 스크립트 경로
+  const pythonExecutablePath = 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\python.exe'; 
+  const pythonScriptPath = 'FFT_test_6channel_d.py'; 
 
   pythonProcess = spawn(pythonExecutablePath, [pythonScriptPath], {
     env: {
         ...process.env,
-        PATH: 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\Scripts;' + process.env.PATH, // 세미콜론 사용
-        PYTHONPATH: 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages', // site-packages 경로
+        PATH: 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\Scripts;' + process.env.PATH, 
+        PYTHONPATH: 'C:\\Users\\heezin\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages', 
     },
 });
 
-
   pythonProcess.stdout.on('data', (data) => {
     const result = data.toString().trim();
-    console.log(`Python Output: ${result}`);
-
+    
     try {
       const parsedResult = JSON.parse(result);
       BrowserWindow.getAllWindows().forEach((window) => {
         window.webContents.send('update-result', parsedResult);
       });
     } catch (error) {
-      console.error('JSON 파싱 오류:', error);
     }
   });
-
   pythonProcess.stderr.on('data', (data) => {
-    console.error(`Python Error: ${data.toString()}`);
   });
-
-  pythonProcess.on('close', (code) => {
-    console.log(`Python Process Closed: ${code}`);
+  pythonProcess.on('close', (code) => {  
   });
 });
 
@@ -234,7 +209,7 @@ ipcMain.on('stop-antispoofing', () => {
   if (pythonProcess) {
     pythonProcess.kill(); // Python 프로세스 종료
     pythonProcess = null;
-    console.log('Python 프로세스 종료됨');
+   
   }
 });
 
@@ -262,7 +237,7 @@ ipcMain.on('send-embedding-request', async (event, imageData) => {
     const embeddingResult = await generateFaceEmbedding(imageData);
     event.sender.send('face-embedding-result', embeddingResult);
   } catch (error) {
-    console.error('임베딩 요청 오류:', error);
+    
   }
 });
 
@@ -304,10 +279,6 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
         .map(Number)
         .map(value => isNaN(value) ? 0 : value); // NaN 값을 0으로 대체
 
-        console.log("stdout 결과:", stdout);
-        console.log("embeddingArray 변환 전:", stdout.trim().replace(/tensor\(|\)|\s+/g, '').split(','));
-        console.log("embeddingArray 최종:", embeddingArray);
-
 
       event.sender.send('face-embedding-result', JSON.stringify(embeddingArray));
     });
@@ -321,17 +292,17 @@ ipcMain.on('process-face-embedding', (event, { imageData }) => {
 ipcMain.on('sign-up', async (event, { email, password }) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    console.log(`회원가입 성공: ${userCredential.user.email}`);
+   
     event.sender.send('sign-up-success');
   } catch (error) {
-    console.error(`회원가입 실패: ${error.message}`);
+    
     event.sender.send('sign-up-failed', error.message);
   }
 });
 
 
 ipcMain.on('save-embedding', (event, embedding) => {
-  console.log('저장된 임베딩 값:', embedding);
+  
   lastEmbedding = embedding; // 전역 변수에 저장
 });
 
@@ -359,9 +330,9 @@ ipcMain.handle('save-user-embedding', async (event, { email, faceEmbedding }) =>
       email: email,
       faceEmbedding: faceEmbedding
     });
-    console.log('얼굴 임베딩 저장 성공');
+    
   } catch (error) {
-    console.error('얼굴 임베딩 저장 실패:', error);
+    
   }
 });
 
@@ -377,11 +348,11 @@ if (!ipcMain.listeners('get-user-doc').length) {
       if (userDocSnap.exists()) {
         return userDocSnap.data();
       } else {
-        console.error('등록된 사용자가 없습니다.', email);
+        
         return null;
       }
     } catch (error) {
-      console.error('Error fetching user document:', error);
+      
       return null;
     }
   });
@@ -393,7 +364,7 @@ ipcMain.on('login', async (event, { email, password }) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     userEmail = userCredential.user.email;
-    console.log("로그인 성공:", userEmail);
+    
 
     event.sender.send('login-success', { email: userEmail });
 
@@ -402,7 +373,7 @@ ipcMain.on('login', async (event, { email, password }) => {
       window.webContents.executeJavaScript(`localStorage.setItem('userEmail', '${userEmail}')`);
     });
   } catch (error) {
-    console.error("로그인 실패:", error.message);
+   
     event.sender.send('login-failed', error.message);
   }
 });
@@ -419,7 +390,7 @@ ipcMain.on('logout', async (event) => {
     if (pythonProcess) {
       pythonProcess.kill();
       pythonProcess = null;
-      console.log("Python 프로세스 종료됨");
+      
     }
 
     BrowserWindow.getAllWindows().forEach((window) => {
@@ -430,10 +401,10 @@ ipcMain.on('logout', async (event) => {
       `);
     });
     
-    console.log('로그아웃 성공');
+    
     event.sender.send('logout-success');
   } catch (error) {
-    console.error(`로그아웃 실패: ${error.message}`);
+    
     event.sender.send('logout-failed', error.message);
   }
 });
@@ -451,10 +422,10 @@ ipcMain.handle('delete-user-doc', async (event, userEmail) => {
   try {
     const userDocRef = doc(db, `users/${userEmail}`);
     await deleteDoc(userDocRef);
-    console.log(`User document for ${userEmail} deleted successfully.`);
+   
     return true;
   } catch (error) {
-    console.error(`Error deleting user document for ${userEmail}:`, error);
+    
     throw error;
   }
 });
@@ -466,9 +437,9 @@ async function deleteAuthUser(userEmail) {
   try {
     const userRecord = await admin.auth().getUserByEmail(userEmail);
     await admin.auth().deleteUser(userRecord.uid);
-    console.log(`User with email ${userEmail} deleted from Authentication.`);
+    
   } catch (error) {
-    console.error(`Error deleting authenticated user:`, error);
+    
   }
 }
 
@@ -480,7 +451,7 @@ ipcMain.handle('delete-auth-user', async (event, userEmail) => {
     await deleteAuthUser(userEmail);
     return { success: true };
   } catch (error) {
-    console.error('Error deleting authenticated user:', error);
+   
     return { success: false, error: error.message };
   }
 });
@@ -491,12 +462,12 @@ ipcMain.handle('delete-auth-user', async (event, userEmail) => {
 // Firestore에서 데이터 가져오기
 ipcMain.handle('get-data', async (event, { collectionName }) => {
   try {
-    console.log('Fetching data from Firestore collection:', collectionName);
+    
 
     const snapshot = await getDocs(collection(db, collectionName));
     return snapshot.docs.map(doc => doc.data());
   } catch (error) {
-    console.error('Error fetching data from Firestore:', error);
+    
     throw error;
   }
 });
@@ -504,15 +475,14 @@ ipcMain.handle('get-data', async (event, { collectionName }) => {
 //사이트 정보 저장
 ipcMain.handle('write-data', async (event, { collectionName, data }) => {
   try {
-    console.log(`Firestore의 컬렉션 경로에 데이터 저장: ${collectionName}`, data);
+    
 
     // collectionName이 사용자의 브 컬렉션 경로로 전달됨 (예: `users/userEmail/sites`)
     const docRef = await addDoc(collection(db, collectionName), data);
-    console.log('문서가 성공적으로 저장되었습니다. ID:', docRef.id);
-
+    
     return true;
   } catch (error) {
-    console.error('Firestore 문서 저장 중 오류:', error);
+    
     throw error;
   }
 
@@ -531,30 +501,30 @@ ipcMain.handle('get-user-sites', async (event, userEmail) => {
       ...doc.data()
     }));
 
-    console.log("불러온 사이트 데이터:", sites); // 디버깅용 로그
+    
     return sites;
   } catch (error) {
-    console.error("사이트 데이터를 불러오는 중 오류 발생:", error);
+    
     return [];
   }
 });
 
 ipcMain.handle('delete-site-data', async (event, userEmail, docId) => {
   try {
-    console.log(`Firestore에서 삭제 요청 - 사용자 이메일: ${userEmail}, 한 번 인코딩된 문서 ID: ${docId}`);
+   
     const siteDocRef = doc(db, `users/${userEmail}/sites`, docId);
     const docSnapshot = await getDoc(siteDocRef);
 
     if (docSnapshot.exists()) {
       await deleteDoc(siteDocRef);
-      console.log(`Firestore에서 사이트 데이터 삭제 성공: ${docId}`);
+      
       return true;
     } else {
-      console.error(`삭제할 문서가 존재하지 않습니다: ${docId}`);
+      
       return false;
     }
   } catch (error) {
-    console.error('Firestore에서 사이트 데이터 삭제 실패:', error);
+    
     throw error;
   }
 });
@@ -567,27 +537,19 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
     const loginWindow = new BrowserWindow({
       width: 800,
       height: 600,
-      parent: null, // 부모 창 설정 제거
+      parent: null, 
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, 'preload.js')
       }
     });
-
-
     const decodedUrl = decodeURIComponent(url);
-    console.log("디코딩된 URL:", decodedUrl);
     loginWindow.loadURL(decodedUrl);
-
-
     loginWindow.webContents.on('did-finish-load', () => {
-      console.log('페이지 로드 완료, 자동 로그인 시도 중...');
-
-      // MutationObserver 완전 비활성화
+    
       loginWindow.webContents.executeJavaScript(`
         window.electronAPI.send('disable-observer');
-        console.log("MutationObserver 완전 비활성화됨");
       `).catch(error => console.error('비활성화 스크립트 실행 중 오류 발생:', error));
 
       setTimeout(() => {
@@ -601,26 +563,20 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
           if (idField && passwordField) {
             idField.value = "${id}";
             passwordField.value = "${password}";
-            console.log('자동 로그인 폼 입력 완료');
+           
           } else {
-            console.error('ID 또는 비밀번호 필드를 찾을 수 없습니다.');
           }
-        `).catch(error => console.error('자동 로그인 스크립트 실행 중 오류 발생:', error));
-      }, 500); // 폼 입력 완료 후 0.5초 지연
+        `).catch(error => console.error('오류 발생:', error));
+      }, 500); 
     });
-
-
     loginWindow.on('closed', () => {
-      console.log("loginWindow 닫힘");
-      // 메인 페이지 새로고침 요청
+      
       const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
       if (mainWindow) {
-        mainWindow.webContents.send('refresh-main-page');
-        console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
+        mainWindow.webContents.send('refresh-main-page');   
       }
     });
   } catch (error) {
-    console.error('자동 로그인 처리 중 오류 발생:', error);
   }
 });
 
@@ -628,12 +584,10 @@ ipcMain.handle('auto-login', async (event, { url, id, password }) => {
 // main.js
 
 ipcMain.on('navigate-to-antispoofing', () => {
-  console.log("Navigating to antispoofing page");
 
   // 기존 Python 프로세스 종료
   if (pythonProcess) {
     pythonProcess.kill();
-    console.log("기존 Python 프로세스 종료됨");
   }
 
   // 새로운 Python 프로세스 시작
@@ -642,7 +596,6 @@ ipcMain.on('navigate-to-antispoofing', () => {
 
   pythonProcess.stdout.on('data', (data) => {
     const result = data.toString().trim();
-    console.log(`Python Output: ${result}`);
 
     try {
       const parsedResult = JSON.parse(result);
@@ -650,16 +603,13 @@ ipcMain.on('navigate-to-antispoofing', () => {
         window.webContents.send('update-result', parsedResult);
       });
     } catch (error) {
-      console.error('JSON 파싱 오류:', error);
     }
   });
 
   pythonProcess.stderr.on('data', (data) => {
-    console.error(`Python Error: ${data.toString()}`);
   });
 
   pythonProcess.on('close', (code) => {
-    console.log(`Python Process Closed: ${code}`);
   });
 
   // 페이지 로드
@@ -669,7 +619,6 @@ ipcMain.on('navigate-to-antispoofing', () => {
 
 
 ipcMain.on('navigate-to-write-page', (event) => {
-  console.log("Navigating to write page"); 
   const win = BrowserWindow.getAllWindows()[0];
   win.loadFile('writepage.html');
 });
@@ -726,19 +675,14 @@ app.on('activate', () => {
 
 auth.setPersistence(browserSessionPersistence)
   .then(() => {
-    console.log("세션 지속성이 설정되었습니다.");
   })
   .catch((error) => {
-    console.error("세션 지속성 설정 중 오류:", error.message);
   });
 
-  // Firebase 인증 세션을 브라우저 탭이 닫힐 때 종료되도록 설정
 auth.setPersistence(browserSessionPersistence)
 .then(() => {
-  console.log("세션 지속성을 SESSION으로 설정");
 })
 .catch((error) => {
-  console.error("세션 지속성 설정 중 오류:", error.message);
 });
 
 
@@ -759,18 +703,18 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
 
 
         win.webContents.on('did-finish-load', () => {
-          console.log("페이지 로드 완료 및 MutationObserver 설정");
+
         });
 
 
 
       // 새 창이 닫힐 때 메인 페이지 새로고침 요청
       win.on('closed', () => {
-        console.log("open-url-in-new-window 창 닫힘, 메인 페이지 새로고침 요청 전송");
+       
         const mainWindow = BrowserWindow.getAllWindows().find(win => win.getTitle() === 'Main Page');
         if (mainWindow) {
           mainWindow.webContents.send('refresh-main-page');
-          console.log("메인 페이지에 'refresh-main-page' 이벤트 전송 완료");
+          
         }
       });
 
@@ -788,12 +732,9 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
             title: title || 'Untitled',
             icon: icon || '/icon.png'
           });
-          console.log('Firestore에 사이트 데이터 저장 성공:', siteData);
-        } catch (error) {
-          console.error('Firestore에 사이트 데이터 저장 실패:', error);
+        } catch (error) {          
         }
       } else {
-        console.log('사용자가 로그인되어 있지 않습니다.');
       }
     });
 
@@ -801,7 +742,6 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
 
     ipcMain.on('set-user-email', (event, email) => {
       userEmail = email;
-      console.log('User email set to:', userEmail);
     });
 
     ipcMain.handle('get-user-email', async (event) => {
@@ -812,7 +752,6 @@ ipcMain.on('open-url-in-new-window', (_event, url) => {
             .catch(() => resolve(null));
         });
       });
-      console.log("get-user-email 핸들러에서 가져온 이메일:", email);
       return email;
     });
   

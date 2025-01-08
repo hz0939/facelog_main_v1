@@ -10,9 +10,7 @@ window.onload = () => {
     return;
   }
 
-  console.log(`로그인 사용자 이메일: ${userEmail}`);
 
-  // 웹캠 스트림 시작
   navigator.mediaDevices.getUserMedia({ video: true })
     .then((stream) => {
       video.srcObject = stream;
@@ -31,20 +29,13 @@ window.onload = () => {
     const imageData = canvas.toDataURL('image/png');
 
     try {
-      // 새로운 임베딩 요청
       window.electronAPI.sendEmbeddingRequest(imageData);
-    
-      // 단일 이벤트 리스너 설정
       window.electronAPI.removeAllListeners('face-embedding-result');
       window.electronAPI.onEmbeddingResult(async (newEmbedding) => {
-        console.log('newEmbedding 원본:', newEmbedding);
-        console.log('newEmbedding 데이터 타입:', typeof newEmbedding);
-    
-        // newEmbedding 배열로 변환
+
         const newEmbeddingArray = convertToArray(newEmbedding, 'newEmbedding');
         if (!newEmbeddingArray) return;
     
-        // 사용자 데이터에서 storedEmbedding 가져오기
         const userData = await window.electronAPI.getUserDoc(userEmail);
         if (!userData || !userData.faceEmbedding) {
           console.error('사용자 데이터에 faceEmbedding이 없습니다.');
@@ -58,38 +49,32 @@ window.onload = () => {
           return;
         }
     
-        // storedEmbedding과 newEmbedding 비교
         const similarityToStored = calculateCosineSimilarity(newEmbeddingArray, storedEmbedding);
         console.log('storedEmbedding과 유사도:', similarityToStored);
     
-        if (similarityToStored > 0.7) {
-          showToast('1단계 인증 성공: 등록된 사용자 정보와 일치합니다', 'bottom'); // Toast 메시지 표시
-    
-          // lastEmbedding 가져오기
+        if (similarityToStored > 0.6) {
+          showToast('1단계 인증 성공: 등록된 사용자 정보와 일치합니다', 'middle'); 
+
           const lastEmbedding = await window.electronAPI.getEmbedding();
-          console.log('lastEmbedding 원본:', lastEmbedding);
-    
-          // lastEmbedding 배열로 변환
+
           const lastEmbeddingArray = convertToArray(lastEmbedding, 'lastEmbedding');
           if (!lastEmbeddingArray) return;
     
-          // lastEmbedding과 newEmbedding 비교
           const similarityToLast = calculateCosineSimilarity(newEmbeddingArray, lastEmbeddingArray);
           console.log('lastEmbedding과 유사도:', similarityToLast);
     
-          if (similarityToLast > 0.7) {
-            showToast('2단계 스푸핑 방어 검증 성공: 동일한 실사용자입니다.', 'middle'); // Toast 메시지 표시
-            console.log('로그인 성공. 메인 페이지로 이동합니다.');
+          if (similarityToLast > 0.65) {
+            showToast('2단계 스푸핑 방어 검증 성공: 동일한 실사용자입니다.', 'bottom'); 
              
             setTimeout(() => {
             window.location.href = 'mainpage.html';
             }, 2000);
            
           } else {
-            alert('lastEmbedding과 일치하지 않습니다.');
+            alert('antispofing과 사용자가 일치하지 않습니다.');
           }
         } else {
-          alert('storedEmbedding과 일치하지 않습니다.');
+          alert('저장된 사용자와 일치하지 않습니다.');
         }
       });
     } catch (error) {
@@ -188,7 +173,7 @@ function showToast(message, position = 'bottom') {
   if (position === 'bottom') {
     toast.style.bottom = '20px';
   } else if (position === 'middle') {
-    toast.style.bottom = '50%';
+    toast.style.bottom = '100px'; // bottom 위치보다 위로 설정
   } else if (position === 'top') {
     toast.style.top = '20px';
   }

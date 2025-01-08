@@ -13,7 +13,6 @@ window.onload = () => {
 
     // 회원가입 성공 시 얼굴 등록 페이지로 이동
     window.electronAPI.onSignUpSuccess(() => {
-      console.log('회원가입 성공: 얼굴 등록 페이지로 이동');
       // 'navigate-to-signup-face' 이벤트를 메인 프로세스에 전송
       window.electronAPI.send('navigate-to-signup-face');
     });
